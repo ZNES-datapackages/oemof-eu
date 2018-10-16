@@ -1,0 +1,39 @@
+{
+  "directories": {
+    "elements": "data/elements",
+    "sequences": "data/sequences",
+    "geometries": "data/geometries",
+    "archive": "archive",
+    "cache": "cache",
+    "resources": "resources",
+    "scripts": "scripts"
+  },
+  "year": 2050,
+  "weather_year": 2011,
+  "demand_year": 2011,
+  "buses": [
+    "LU",
+    "NL",
+    "DK",
+    "SE",
+    "PL",
+    "CZ",
+    "AT",
+    "NO",
+    "BE",
+    "FR",
+    "CH",
+    "DE"
+  ],
+  "sources": [
+    "dispatchable",
+    "volatile",
+    "storage"],
+  "sinks": [
+    "load"],
+  "transformer": [
+    "connection",
+    "conversion",
+    "chp"
+  ]
+}

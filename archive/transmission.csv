@@ -1,0 +1,39 @@
+ENTSO-E publications. (2016, March 21). NTC Values Winter 2010-2011. Retrieved from https://www.entsoe.eu/fileadmin/user_upload/_library/ntc/archive/NTC-Values-Winter-2010-2011.pdf ..;;;
+Changes: Only a subset of NTC-values was extracted. Individual changes are reported in the changes column. ;;;
+License: https://creativecommons.org/licenses/by/3.0/au/;;;
+from;to;ntc;changes
+FR;BE;3400;
+FR;CH;3200;
+FR;DE;2700;
+BE;FR;2300;
+BE;NL;2400;
+NL;BE;2400;
+NL;DE;3000;
+LU;DE;0;NRL in original
+DE;FR;3200;
+DE;NL;3850;
+DE;LU;980;
+DE;DK;1550;DKw + DKe.
+DE;SE;600;
+DE;CH;1500;
+DE;AT;2200;
+DE;PL;1200;
+DE;CZ;800;
+DK;DE;2085;DKw + DKe. Lower value is used.
+DK;NO;950;Only DKw.
+DK;SE;2440;DKw + DKe.
+NO;DK;950;
+NO;SE;3595;
+SE;DE;610;
+SE;DK;1980;DKw + DKe.
+SE;NO;3895;
+SE;PL;600;
+AT;DE;2000;
+AT;CH;470;
+AT;CZ;600;
+PL;DE;1100;
+PL;SE;0;
+PL;CZ;1800;
+CZ;DE;2300;Lower value is used.
+CZ;AT;1000;Lower value is used.
+CZ;PL;800;

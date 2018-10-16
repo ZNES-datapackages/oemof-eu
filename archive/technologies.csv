@@ -1,0 +1,15 @@
+,Investment in Euro/kW,lifetime,FOM,efficiency,carrier,type
+wind onshore,1182,25,3,1,wind,volatile
+wind offshore,2506,25,3,1,wind,volatile
+pv rooftop,725,25,2,1,solar,volatile
+pv utility,425,25,3,1,solar,volatile
+ocgt,400,30,4,0.39,gas,dispatchable
+ccgt,800,30,4,0.6,gas,dispatchable
+pumped storage,2000,80,1,0.87,water,storage
+hydro reservoir,2000,80,1,0.9,water,dispatchable
+run of river,3000,80,2,0.9,water,dispatchable
+coal,2450,40,2,0.5,coal,dispatchable
+battery,1456.8,15,0,1,chemical,storage
+hydrogen electrolysis,350,18,4,0.8,hydrogen,conversion
+hydrogen fuel cell,339,20,3,0.58,hydrogen,dispatchable
+caes,500,30,0,0.8,air,storage
