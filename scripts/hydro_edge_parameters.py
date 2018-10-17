@@ -54,8 +54,8 @@ ror_elements.drop(['_capacity', '_summed_max', '_inflow'], axis=1, inplace=True)
 reservoir_elements['edge_parameters'] = \
     reservoir_elements['bus'].str[:2].map(ror_elements['edge_parameters'])
 
-ror_elements.set_index('name', inplace=True)
+#ror_elements.set_index('name', inplace=True)
 
-path = building.write_elements('run_of_river.csv', ror_elements, replace=True)
+#path = building.write_elements('run_of_river.csv', ror_elements, replace=True)
 
 path = building.write_elements('reservoir.csv', reservoir_elements, replace=True)

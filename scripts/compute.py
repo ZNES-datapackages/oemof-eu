@@ -2,7 +2,7 @@
 from datapackage import Package
 
 from oemof.solph import EnergySystem, Model
-from renpass import options renpass
+from renpass import options, renpass
 from datapackage_utilities import aggregation
 
 import pprint
