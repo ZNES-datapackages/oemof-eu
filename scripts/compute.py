@@ -2,7 +2,7 @@
 from datapackage import Package
 
 from oemof.solph import EnergySystem, Model
-from renpass import options, system_constraints, renpass
+from renpass import options renpass
 from datapackage_utilities import aggregation
 
 import pprint
@@ -33,7 +33,9 @@ m.solve('gurobi')
 time['solve'] = renpass.stopwatch()
 
 
-#m.write('model.lp', io_options={'symbolic_solver_labels': True})
+if False: 
+	m.write('model.lp', io_options={'symbolic_solver_labels': True})
+
 renpass.write_results(es, m, Package(path + 'datapackage.json'),
                       **{
                     '--output-directory':'results',
