@@ -47,6 +47,7 @@ building.infer_metadata(package_name='angus_base_scenario',
                                     'load', 'run_of_river', 'reservoir',
                                     'pumped_storage', 'excess'],
                             'profile': ['load', 'volatile', 'run_of_river'],
-                            'from_to_bus': ['grid']
+                            'from_to_bus': ['grid'],
+                            'chp': []
                             }
                         )

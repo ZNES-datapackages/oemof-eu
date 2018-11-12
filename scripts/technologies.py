@@ -64,13 +64,12 @@ for idx, row in all_technologies.iterrows():
             if row['type'] == 'storage':
                 if 'battery' in idx:
                     cr = 0.2
-                if 'pumped' in idx:
-                    cr = 0.1
                 if 'caes' in idx:
-                    cr = 0.3
+                    cr = 0.125
                 element.update({
                     'bus': b,
                     'tech': idx,
+                    'efficiency': row['efficiency'],
                     'capacity_ratio': cr,
                     'capacity_cost': annuity(
                         row['Investment in Euro/kW'], row['lifetime'], 0.07) * 1000,
