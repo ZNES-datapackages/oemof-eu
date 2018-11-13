@@ -116,5 +116,5 @@ input_scalars = pd.concat([
         multiindex=True)['scalars']
     for b in buses.index])
 
-input_scalars.unstack('type').to_excel('input_scalars.csv')
+input_scalars.unstack('type').to_excel('input_scalars')
 writer.save()
