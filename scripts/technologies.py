@@ -6,7 +6,7 @@ from datapackage_utilities import building
 config = building.get_config()
 
 investment_technologies = [
-    'wind_onshore', 'wind_offshore', 'pv_rooftop', 'pv_utility', 'ocgt', 'ccgt',
+    'wind_onshore', 'wind_offshore', 'pv_rooftop', 'ocgt', 'ccgt',
     'battery', 'coal', 'caes']
 
 def annuity(capex, n, wacc):
@@ -50,7 +50,7 @@ for idx, row in all_technologies.iterrows():
                             carrier.loc['co2'].cost) / row['efficiency'],
                         'tech': idx,
                         'edge_parameters': json.dumps({
-                            "emmission_factor":  (carrier.loc[row['carrier']].emission /
+                            "emission_factor":  (carrier.loc[row['carrier']].emission /
                                                   row['efficiency'])
                             })
                         })

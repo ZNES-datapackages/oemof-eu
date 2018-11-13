@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 
 from oemof.solph import EnergySystem, Model
+from oemof.outputlib import processing, views
 from renpass import options, cli
 from renpass import postprocessing as pp
 from datapackage_utilities import aggregation, building
@@ -116,5 +117,5 @@ input_scalars = pd.concat([
         multiindex=True)['scalars']
     for b in buses.index])
 
-input_scalars.unstack('type').to_excel('input_scalars')
+input_scalars.unstack('type').to_excel(writer, 'input_scalars')
 writer.save()
