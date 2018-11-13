@@ -92,4 +92,4 @@ for c in countries:
 
 sequences_df.index = building.timeindex()
 
-path = building.write_sequences('electricity_load_profile.csv', sequences_df)
+path = building.write_sequences('load_profile.csv', sequences_df)
