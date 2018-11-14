@@ -3,4 +3,4 @@ base,gas,2050,25,0.2
 base,coal,2050,12,0.4
 base,biomass,2050,200,0
 base,biogas,2050,100,0
-base,co2,2050,50,
+base,co2,2050,0,
