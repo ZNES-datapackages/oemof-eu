@@ -152,6 +152,6 @@ pd.DataFrame({
         m.name: meta_results['problem']['Number of constraints']},
     'variables': {
         m.name: meta_results['problem']['Number of variables']}})\
-            .to_exel(write, 'meta_results')
+            .to_excel(writer, 'meta_results')
 
 writer.save()
