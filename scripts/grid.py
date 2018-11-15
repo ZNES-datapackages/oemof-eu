@@ -34,17 +34,18 @@ data = pd.read_csv(filepath, skiprows=3, sep=';', index_col=['from', 'to'])
 elements = {}
 for (x, y), (value, _) in data.iterrows():
 
-    from_bus, to_bus = x + '-electricity', y + '-electricity'
+    if x in config['buses'] and y in config['buses']:
+        from_bus, to_bus = x + '-electricity', y + '-electricity'
 
-    element = {
-        'type': 'connection',
-        'loss': loss,
-        'to_bus': to_bus,
-        'from_bus': from_bus,
-        'capacity': value
-    }
+        element = {
+            'type': 'connection',
+            'loss': loss,
+            'to_bus': to_bus,
+            'from_bus': from_bus,
+            'capacity': value
+        }
 
-    elements[from_bus + '-' + to_bus] = element
+        elements[from_bus + '-' + to_bus] = element
 
 path = building.write_elements(
     'grid.csv', pd.DataFrame.from_dict(elements, orient='index'))

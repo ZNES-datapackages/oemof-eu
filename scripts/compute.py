@@ -11,13 +11,13 @@ from datapackage_utilities import aggregation, building
 
 import pprint
 
-test = True
+test = False
 
 time = {}
 
 if test:
     print("Clustering for temporal aggregation ... ")
-    path = aggregation.temporal_clustering('datapackage.json', 6, path='/tmp', how='daily') + '/'
+    path = aggregation.temporal_clustering('datapackage.json', 3, path='/tmp', how='daily') + '/'
 else:
     path = ''
 
@@ -30,14 +30,16 @@ es = EnergySystem.from_datapackage(
 time['energysystem'] = cli.stopwatch()
 
 
+m = Model(es)#, objective_weighting=es.temporal['weighting'])
 
-m = Model(es, objective_weighting=es.temporal['weighting'])
+
 time['model'] = cli.stopwatch()
 
-constraints.emission_limit(m, limit=0)
+constraints.emission_limit(m, limit=250*1e6 * 0.1)
+
 
 m.receive_duals()
-m.write('model.lp', io_options={'symbolic_solver_labels': True})
+
 
 m.solve('gurobi')
 time['solve'] = cli.stopwatch()
@@ -50,7 +52,7 @@ results = m.results()
 ################################################################################
 buses = building.read_elements('bus.csv')
 
-connection_results = pp.component_results(es, results)['connection']
+connection_results = pp.component_results(es, results).get('connection')
 
 writer = pd.ExcelWriter('results.xlsx')
 
@@ -61,12 +63,14 @@ for b in buses.index:
 
     supply.columns = supply.columns.droplevel([1,2])
 
-    ex = connection_results.loc[:, (es.groups[b], slice(None), 'flow')].sum(axis=1)
-    im = connection_results.loc[:, (slice(None), es.groups[b], 'flow')].sum(axis=1)
+    if connection_results:
+        ex = connection_results.loc[:, (es.groups[b], slice(None), 'flow')].sum(axis=1)
+        im = connection_results.loc[:, (slice(None), es.groups[b], 'flow')].sum(axis=1)
 
-    supply['net_import'] =  im-ex
+        supply['net_import'] =  im-ex
 
     supply.to_excel(writer, b)
+
 
 # import matplotlib.pyplot as plt
 # fig = plt.Figure(figsize=(20, 10))
@@ -76,8 +80,9 @@ for b in buses.index:
 # plt.savefig('plot.pdf')
 
 
+
 demand = pp.demand_results(results=results, es=es, bus=buses.index)
-demand.columns = demand.columns.droplevel([0,2])
+demand.columns = demand.columns.droplevel([0, 2])
 demand.to_excel(writer, 'demand')
 
 all = pp.bus_results(es,
@@ -109,7 +114,7 @@ capacities.to_excel(writer, 'installed_capacities')
 
 
 # get shadow price for co2
-#m.dual.get(m.emission_limit)
+
 
 duals = pp.bus_results(es, results, aggregate=True).xs('duals', level=2, axis=1)
 duals.columns = duals.columns.droplevel(1)
@@ -128,22 +133,27 @@ duals.columns = duals.columns.droplevel(1)
 #
 # transform_index(df=supply.T).groupby('tech').sum().T
 
-pp.component_results(es, results)['excess']
+
+pp.component_results(
+    es, results, select='sequences')['excess'].to_excel(writer,
+                                                        'excess_electricity')
 
 #
-input_scalars = pd.concat([
-    views.node(
-        processing.parameter_as_dict(es),
-        es.groups[b],
-        multiindex=True)['scalars']
-    for b in buses.index])
-
-input_scalars.unstack('type').to_excel(writer, 'input_scalars')
+# input_scalars = pd.concat([
+#     views.node(
+#         processing.parameter_as_dict(es),
+#         es.groups[b],
+#         multiindex=True)['scalars']
+#     for b in buses.index])
+#
+# input_scalars.unstack('type').to_excel(writer, 'input_scalars')
 
 # m.write('model.lp', io_options={'symbolic_solver_labels':True})
+time['postprocessing'] = cli.stopwatch()
 
 meta_results = processing.meta_results(m)
 pd.DataFrame({
+    'time': time,
     'objective': {
         m.name: meta_results['objective']},
     'solver_time': {
@@ -155,3 +165,6 @@ pd.DataFrame({
             .to_excel(writer, 'meta_results')
 
 writer.save()
+
+
+#supply.sum()/demand.sum().values
