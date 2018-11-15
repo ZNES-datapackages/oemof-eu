@@ -9,7 +9,7 @@ Click==7.0
 cryptography==2.3.1
 datapackage==1.5.0
 -e git+https://github.com/znes/datapackage-utilities.git@7abb427e479b27ae905543a01c011cd2f4734016#egg=datapackage_utilities
--e git+https://github.com/znes/renpass.git@master#egg=renpass
+-e git+https://github.com/znes/renpass.git@dev#egg=renpass
 et-xmlfile==1.0.1
 geojson==2.4.0
 idna==2.7

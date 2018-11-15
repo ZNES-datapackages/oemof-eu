@@ -63,7 +63,7 @@ for b in buses.index:
 
     supply.columns = supply.columns.droplevel([1,2])
 
-    if connection_results:
+    if connection_results is not None:
         ex = connection_results.loc[:, (es.groups[b], slice(None), 'flow')].sum(axis=1)
         im = connection_results.loc[:, (slice(None), es.groups[b], 'flow')].sum(axis=1)
 
