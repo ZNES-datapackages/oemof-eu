@@ -1,23 +1,31 @@
 #
 from datapackage import Package
+import datetime
+
 import pandas as pd
 import numpy as np
+import logging
+
+# import oemof base classes to create energy system objects
+import logging
 
 from oemof.solph import EnergySystem, Model, constraints
+from oemof.tools import logger
+
 from oemof.outputlib import processing, views
 from renpass import options, cli
 from renpass import postprocessing as pp
 from datapackage_utilities import aggregation, building
 
-import pprint
 
-test = False
-
+aggregate = True
+emission_limit = 250*1e6 * 0.2
 time = {}
 
-if test:
-    print("Clustering for temporal aggregation ... ")
-    path = aggregation.temporal_clustering('datapackage.json', 3, path='/tmp', how='daily') + '/'
+
+if aggregate:
+    logging.info("Aggregating for temporal aggregation ... ")
+    path = aggregation.temporal_skip('datapackage.json', 3, path='/tmp') + '/'
 else:
     path = ''
 
@@ -29,17 +37,13 @@ es = EnergySystem.from_datapackage(
     typemap=options.typemap)
 time['energysystem'] = cli.stopwatch()
 
+m = Model(es)
 
-m = Model(es)#, objective_weighting=es.temporal['weighting'])
-
-
-time['model'] = cli.stopwatch()
-
-constraints.emission_limit(m, limit=250*1e6 * 0.1)
-
+constraints.emission_limit(m, limit=emission_limit)
 
 m.receive_duals()
 
+time['model'] = cli.stopwatch()
 
 m.solve('gurobi')
 time['solve'] = cli.stopwatch()
@@ -54,14 +58,15 @@ buses = building.read_elements('bus.csv')
 
 connection_results = pp.component_results(es, results).get('connection')
 
-writer = pd.ExcelWriter('results.xlsx')
+writer = pd.ExcelWriter(
+            datetime.datetime.now().strftime("%Y%m%d_%H:%M") + '_results.xlsx')
 
 for b in buses.index:
     supply = pp.supply_results(results=results, es=es,
                                bus=[b],
                                types=['dispatchable', 'volatile', 'storage'])
 
-    supply.columns = supply.columns.droplevel([1,2])
+    supply.columns = supply.columns.droplevel([1,   2])
 
     if connection_results is not None:
         ex = connection_results.loc[:, (es.groups[b], slice(None), 'flow')].sum(axis=1)
@@ -78,7 +83,6 @@ for b in buses.index:
 # ax.legend(loc='upper center', bbox_to_anchor=(1.45, 0.8), shadow=True, ncol=2)
 # demand.loc[:, es.groups['DE_load']].reset_index(drop=True).loc[0:48].plot()
 # plt.savefig('plot.pdf')
-
 
 
 demand = pp.demand_results(results=results, es=es, bus=buses.index)
@@ -106,14 +110,10 @@ for node, attr in inputs.items():
 exogenous = pd.DataFrame.from_dict(d, orient='index').dropna()
 exogenous.index = exogenous.index.set_names(['from', 'to', 'type', 'tech'])
 
-
 capacities = pd.concat([endogenous, exogenous.reset_index()]).groupby(['to', 'tech']).sum().unstack('to')
 capacities.columns = capacities.columns.droplevel(0)
 
 capacities.to_excel(writer, 'installed_capacities')
-
-
-# get shadow price for co2
 
 
 duals = pp.bus_results(es, results, aggregate=True).xs('duals', level=2, axis=1)
@@ -138,17 +138,16 @@ pp.component_results(
     es, results, select='sequences')['excess'].to_excel(writer,
                                                         'excess_electricity')
 
-#
-# input_scalars = pd.concat([
-#     views.node(
-#         processing.parameter_as_dict(es),
-#         es.groups[b],
-#         multiindex=True)['scalars']
-#     for b in buses.index])
-#
-# input_scalars.unstack('type').to_excel(writer, 'input_scalars')
 
-# m.write('model.lp', io_options={'symbolic_solver_labels':True})
+input_scalars = pd.concat([
+    views.node(
+        processing.parameter_as_dict(es),
+        es.groups[b],
+        multiindex=True)['scalars']
+    for b in buses.index])
+
+input_scalars.unstack('type').to_excel(writer, 'input_scalars')
+
 time['postprocessing'] = cli.stopwatch()
 
 meta_results = processing.meta_results(m)
@@ -164,7 +163,6 @@ pd.DataFrame({
         m.name: meta_results['problem']['Number of variables']}})\
             .to_excel(writer, 'meta_results')
 
-writer.save()
 
 pd.concat([views.node(results, b, multiindex=True)['scalars'] for b in buses.index]).to_excel(writer, 'scalar_view')
 for b in buses.index:
@@ -172,4 +170,5 @@ for b in buses.index:
 
 writer.save()
 
+m.total_emissions()
 #supply.sum()/demand.sum().values
