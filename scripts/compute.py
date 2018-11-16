@@ -166,5 +166,10 @@ pd.DataFrame({
 
 writer.save()
 
+pd.concat([views.node(results, b, multiindex=True)['scalars'] for b in buses.index]).to_excel(writer, 'scalar_view')
+for b in buses.index:
+    views.node(results, b, multiindex=True)['sequences'].to_excel(writer, b+'-seq')
+
+writer.save()
 
 #supply.sum()/demand.sum().values
