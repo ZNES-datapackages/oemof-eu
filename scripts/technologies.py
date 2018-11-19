@@ -12,10 +12,14 @@ investment_technologies = [
 def annuity(capex, n, wacc):
     return capex * (wacc * (1 + wacc) ** n) / ((1 + wacc) ** n - 1)
 
+potential = pd.read_csv('archive/potential.csv', index_col=[0, 1]).to_dict()
+
 all_technologies = pd.read_csv('archive/technologies.csv', index_col=0)
 carrier = pd.read_csv('archive/carrier.csv')
 carrier[(carrier['year'] == config['year']) & (carrier['scenario'] == 'base')]
 carrier.set_index('carrier', inplace=True)
+
+
 
 types = config['sources']
 
@@ -49,6 +53,7 @@ for idx, row in all_technologies.iterrows():
                             carrier.loc[row['carrier']].emission *
                             carrier.loc['co2'].cost) / row['efficiency'],
                         'tech': idx,
+                        'capacity_potential': potential['capacity_potential'].get((b.strip('-electricity'), idx), "Infinity"),
                         'edge_parameters': json.dumps({
                             "emission_factor":  (carrier.loc[row['carrier']].emission /
                                                   row['efficiency'])
@@ -65,7 +70,7 @@ for idx, row in all_technologies.iterrows():
                     element.update({
                         'capacity_cost': annuity(
                             row['Investment in Euro/kW'], row['lifetime'], 0.07) * 1000,
-                        'capacity_potential': None,
+                        'capacity_potential': potential['capacity_potential'].get((b.strip('-electricity'), idx), "Infinity"),
                         'bus': b,
                         'tech': idx,
                         'profile': profile})
@@ -79,6 +84,7 @@ for idx, row in all_technologies.iterrows():
                         'bus': b,
                         'tech': idx,
                         'efficiency': row['efficiency'],
+                        'capacity_potential': potential['capacity_potential'].get((b.strip('-electricity'), idx), "Infinity"),
                         'capacity_ratio': cr,
                         'capacity_cost': annuity(
                             row['Investment in Euro/kW'], row['lifetime'], 0.07) * 1000,

@@ -175,10 +175,10 @@ for b in buses.index:
 
 writer.save()
 
-views.node(
-    results,
-    es.groups['system'],
-    multiindex=True)
+# views.node(
+#     results,
+#     es.groups['system'],
+#     multiindex=True)
 
 
 es.nodes
