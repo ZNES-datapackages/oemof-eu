@@ -18,13 +18,13 @@ countries = config['buses']
 
 raw_data = pd.read_csv(filepath, index_col=[0], parse_dates=True)
 
-df = raw_data.loc[year][countries]
+df = raw_data.loc[year]
 
 sequences_df = pd.DataFrame(index=df.index)
 
-for c in df.columns:
+for c in countries:
     sequence_name = 'pv-' + c + '-profile'
-    sequences_df[sequence_name] = df[c].values
+    sequences_df[sequence_name] = raw_data.loc[year][c].values
 
 sequences_df.index = building.timeindex()
 path = building.write_sequences('volatile_profile.csv', sequences_df)

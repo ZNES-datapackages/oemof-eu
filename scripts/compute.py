@@ -17,11 +17,11 @@ from renpass import options, cli
 from renpass import postprocessing as pp
 from datapackage_utilities import aggregation, building
 
-
 aggregate = True
 emission_limit = 250*1e6 * 0.2
 time = {}
 
+from oemof.network import Bus
 
 if aggregate:
     logging.info("Aggregating for temporal aggregation ... ")
@@ -31,15 +31,20 @@ else:
 
 cli.stopwatch()
 
+system = Bus('system')
+setattr(system, 'emission_limit', emission_limit)
+
+
 es = EnergySystem.from_datapackage(
     path + 'datapackage.json',
     attributemap={},
     typemap=options.typemap)
+es.add(system)
 time['energysystem'] = cli.stopwatch()
 
 m = Model(es)
 
-constraints.emission_limit(m, limit=emission_limit)
+constraints.emission_limit(m, limit=system.emission_limit)
 
 m.receive_duals()
 
@@ -170,5 +175,10 @@ for b in buses.index:
 
 writer.save()
 
-m.total_emissions()
-#supply.sum()/demand.sum().values
+views.node(
+    results,
+    es.groups['system'],
+    multiindex=True)
+
+
+es.nodes
