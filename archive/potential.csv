@@ -1,4 +1,4 @@
 bus,tech,capacity_potential
-DE,wind_onshore,100
-DE,wind_offshore,50
-DE,caes,10
+DE,wind_onshore,100000
+DE,wind_offshore,50000
+DE,caes,10000

@@ -46,7 +46,6 @@ for idx, row in all_technologies.iterrows():
                     element.update({
                         'capacity_cost': annuity(
                             row['Investment in Euro/kW'], row['lifetime'], 0.07) * 1000,
-                        'capacity_potential': None,
                         'bus': b,
                         'marginal_cost': (
                             carrier.loc[row['carrier']].cost +
