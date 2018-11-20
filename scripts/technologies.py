@@ -75,16 +75,12 @@ for idx, row in all_technologies.iterrows():
                         'profile': profile})
 
                 if row['type'] == 'storage':
-                    if 'battery' in idx:
-                        cr = 0.2
-                    if 'caes' in idx:
-                        cr = 0.125
                     element.update({
                         'bus': b,
                         'tech': idx,
                         'efficiency': row['efficiency'],
                         'capacity_potential': potential['capacity_potential'].get((b.strip('-electricity'), idx), "Infinity"),
-                        'capacity_ratio': cr,
+                        'capacity_ratio': row['capacity_ratio'],
                         'capacity_cost': annuity(
                             row['Investment in Euro/kW'], row['lifetime'], 0.07) * 1000,
                         'loss': 0})
