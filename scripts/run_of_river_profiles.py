@@ -10,12 +10,10 @@ config = building.get_config()
 
 year = str(config['weather_year'])
 
-countries = config['buses']
-
 sequences_df = pd.DataFrame(index=building.timeindex())
 
 elements = building.read_elements('run_of_river.csv')
-for c in countries:
+for c in config['regions']:
     # get sequence name from elements edge_parameters (include re-exp to also
     # check for 'elec' or similar)
     sequence_name = elements.at[

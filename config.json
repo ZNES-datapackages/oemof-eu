@@ -11,7 +11,7 @@
   "year": 2050,
   "weather_year": 2011,
   "demand_year": 2011,
-  "buses": [
+  "regions": [
     "LU",
     "NL",
     "DK",
@@ -25,6 +25,14 @@
     "CH",
     "DE"
   ],
+  "investment_technologies": [
+      "wind_onshore",
+      "wind_offshore",
+      "pv",
+      "ocgt",
+      "ccgt",
+      "battery",
+      "coal"],
   "sources": [
     "dispatchable",
     "volatile",

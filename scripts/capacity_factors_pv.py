@@ -14,7 +14,7 @@ filepath = building.download_data(
 
 year = str(config['weather_year'])
 
-countries = config['buses']
+countries = config['regions']
 
 raw_data = pd.read_csv(filepath, index_col=[0], parse_dates=True)
 

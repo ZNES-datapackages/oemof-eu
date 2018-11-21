@@ -25,7 +25,6 @@ def create_resource(path):
 config = building.get_config()
 
 loss = 0.03
-countries = config['buses']
 
 filepath = building.input_filepath('transmission.csv')
 
@@ -34,7 +33,7 @@ data = pd.read_csv(filepath, skiprows=3, sep=';', index_col=['from', 'to'])
 elements = {}
 for (x, y), (value, _) in data.iterrows():
 
-    if x in config['buses'] and y in config['buses']:
+    if x in config['regions'] and y in config['regions']:
         from_bus, to_bus = x + '-electricity', y + '-electricity'
 
         element = {

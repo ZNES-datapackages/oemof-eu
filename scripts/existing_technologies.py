@@ -30,7 +30,7 @@ else:
         raise XLRDError('Downloaded file not valid xlsx file.')
 
 
-df = df.loc[config['buses']]
+df = df.loc[config['regions']]
 
 marginal_cost = {
     'reservoir': 0,

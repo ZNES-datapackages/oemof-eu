@@ -25,7 +25,7 @@ year = str(config['weather_year'])
 # not in ninja dataset, as new market zones? (replace by german factor)
 missing = ['LU' 'CZ' 'AT' 'CH']
 
-countries = list(set(config['buses']) - set(missing))
+countries = list(set(config['regions']) - set(missing))
 
 near_term = pd.read_csv(near_term_path, index_col=[0], parse_dates=True)
 
@@ -33,7 +33,7 @@ offshore_data = pd.read_csv(off_filepath, index_col=[0], parse_dates=True)
 
 sequences_df = pd.DataFrame(index=near_term.loc[year].index)
 
-for c in config['buses']:
+for c in config['regions']:
     # add offshore profile if country exists in offshore data columns
     if [col for col in offshore_data.columns if c + '_OFF' in col]:
         sequences_df['wind-off-' + c + '-profile'] = offshore_data[c + '_OFF']

@@ -19,8 +19,11 @@ import electricity_load
 print('Building grid ...')
 import grid
 
-print('Building investment technologies ... ')
-import technologies
+print('Building generation technologies ... ')
+import generation
+
+print('Building storage technologies ... ')
+import storage
 
 print('Building existing technologies ... ')
 import existing_technologies
@@ -40,14 +43,19 @@ import capacity_factors_pv
 print('Building excess components ... ')
 import electricity_excess
 
+# print('Building heat components ... ')
+#import district_heating
+
 # add meta data from data using datapackage utils
 building.infer_metadata(package_name='angus_base_scenario',
                         foreign_keys={
                             'bus': ['volatile', 'dispatchable', 'storage',
+                                    'heat_storage', 'heat_load',
                                     'load', 'run_of_river', 'reservoir',
-                                    'pumped_storage', 'excess'],
-                            'profile': ['load', 'volatile', 'run_of_river'],
-                            'from_to_bus': ['grid'],
-                            'chp': []
+                                    'pumped_storage', 'excess', 'boiler'],
+                            'profile': ['load', 'volatile', 'run_of_river',
+                                        'heat_load'],
+                            'from_to_bus': ['grid', 'power_to_heat'],
+                            'chp': ['backpressure', 'extraction']
                             }
                         )

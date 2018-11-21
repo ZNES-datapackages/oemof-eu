@@ -27,7 +27,7 @@ ror_elements.index.name = 'iso-country-code'
 _embed = lambda x: json.dumps({'summed_max': x})
 
 for f in files:
-    if any(c in f for c in config['buses']):
+    if any(c in f for c in config['regions']):
         df = pd.read_csv(os.path.join(dirpath, f))
 
         # select one year

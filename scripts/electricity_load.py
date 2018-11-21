@@ -40,7 +40,7 @@ df.drop(df.index[0:1], inplace=True)
 df.dropna(how='all', axis=1, inplace=True)
 
 
-elements = df.loc[config['buses'], df.loc['Scenario'] == '100% RES']
+elements = df.loc[config['regions'], df.loc['Scenario'] == '100% RES']
 
 
 elements = elements.rename(columns = {'Unnamed: 3':'amount'})
@@ -69,7 +69,7 @@ suffix = '_load_old'
 
 year = str(config['demand_year'])
 
-countries = config['buses']
+countries = config['regions']
 
 columns = [c + suffix for c in countries]
 
