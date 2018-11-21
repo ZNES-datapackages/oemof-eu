@@ -45,6 +45,7 @@ for tech, data in technologies.iterrows():
                     'capacity_cost': annuity(
                         float(data['capacity_cost']), data['lifetime'], 0.07) * 1000,
                     'bus': r + '-electricity',
+                    'type': 'dispatchable',
                     'marginal_cost': (
                         carrier.loc[data['carrier']].cost +
                         carrier.loc[data['carrier']].emission *
@@ -70,6 +71,7 @@ for tech, data in technologies.iterrows():
                     'capacity_potential': potential['capacity_potential'].get((r, tech), "Infinity"),
                     'bus': r + '-electricity',
                     'tech': tech,
+                    'type': 'volatile',
                     'profile': profile})
 
             elements[techmap[tech]][element_name] = element

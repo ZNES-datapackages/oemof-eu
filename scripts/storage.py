@@ -37,6 +37,7 @@ for tech, data in storages.iterrows():
                     'bus': r + '-electricity',
                     'marginal_cost': 0,
                     'tech': tech,
+                    'type': 'storage',
 ''                  'capacity_potential': potential['capacity_potential'].get((r, tech), "Infinity"),
                     'capacity_ratio': data['capacity_ratio']
                     })
