@@ -47,4 +47,4 @@ for (x, y), (value, _) in data.iterrows():
         elements[from_bus + '-' + to_bus] = element
 
 path = building.write_elements(
-    'grid.csv', pd.DataFrame.from_dict(elements, orient='index'))
+    'connection.csv', pd.DataFrame.from_dict(elements, orient='index'))

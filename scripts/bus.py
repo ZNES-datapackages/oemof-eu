@@ -13,6 +13,7 @@ from datapackage_utilities import building, geometry
 
 config = building.get_config()
 
+# Add bus geomtries
 filepath = building.download_data(
     'http://ec.europa.eu/eurostat/cache/GISCO/geodatafiles/'\
     'NUTS_2013_10M_SH.zip',
@@ -29,14 +30,35 @@ nuts0 = pd.Series(geometry.nuts(filepath, nuts=0, tolerance=0.1))
 buses = pd.Series(name='geometry')
 buses.index.name= 'name'
 
-# add buses and their geometry
 for r in config['regions']:
     buses[r + '-electricity'] = nuts0[r]
-
-hub_elements = pd.DataFrame(buses).drop('geometry' ,axis=1)
-hub_elements.loc[:, 'type'] = 'bus'
-hub_elements.loc[:, 'geometry'] = buses.index
-
 building.write_geometries('bus.geojson', buses)
 
-path = building.write_elements('bus.csv', hub_elements)
+# Add electricity buses
+hub_elements = {}
+for b in buses.index:
+    hub_elements[b] = {
+        'type': 'bus',
+        'carrier': 'electricity',
+        'geometry': b,
+        'balanced': True}
+
+# Add heat buses
+for b in config.get('heat_buses', []):
+    hub_elements[b] = {
+        'type': 'bus',
+        'carrier': 'heat',
+        'geometry': None,
+        'balanced': True}
+
+# Add global buses
+for b in config.get('global_buses', []):
+    hub_elements[b] = {
+        'type': 'bus',
+        'carrier': b.split('-')[1],
+        'geometry': None,
+        'balanced': False}
+
+path = building.write_elements(
+            'bus.csv',
+            pd.DataFrame.from_dict(hub_elements, orient='index'))

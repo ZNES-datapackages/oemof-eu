@@ -35,7 +35,6 @@ for tech, data in storages.iterrows():
                     'capacity_cost': annuity(
                         float(data['capacity_cost']) + float(data['storage_capacity_cost']) / float(data['capacity_ratio']), data['lifetime'], 0.07) * 1000,
                     'bus': r + '-electricity',
-                    'marginal_cost': 0,
                     'tech': tech,
                     'type': 'storage',
 ''                  'capacity_potential': potential['capacity_potential'].get((r, tech), "Infinity"),

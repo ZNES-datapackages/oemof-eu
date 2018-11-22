@@ -32,12 +32,7 @@ elements = dict(zip([i for i in element_dfs.keys()], [{},{},{}]))
 for tech, data in technologies.iterrows():
     if tech in config['investment_technologies']:
         for r in config['regions']:
-            # if 'wind_off' in tech and r not in [
-            #     'BE', 'DE', 'DK', 'FI', 'FR', 'GB', 'IE', 'IT', 'NL', 'NO',
-            #     'SE']:
-            #     pass
-            # else:
-            element_name = tech + '_' + r
+            element_name = tech + '-' + r
             element = dict(data)
 
             if techmap[tech] == 'dispatchable':

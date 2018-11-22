@@ -60,8 +60,11 @@ results = m.results()
 # postprocessing write results
 ################################################################################
 buses = building.read_elements('bus.csv')
+##############
+############### CAUTION CLEAR THIS
+#connection_results = pp.component_results(es, results).get('connection')
 
-connection_results = pp.component_results(es, results).get('connection')
+
 
 writer = pd.ExcelWriter(
             datetime.datetime.now().strftime("%Y%m%d_%H:%M") + '_results.xlsx')
@@ -69,15 +72,16 @@ writer = pd.ExcelWriter(
 for b in buses.index:
     supply = pp.supply_results(results=results, es=es,
                                bus=[b],
-                               types=['dispatchable', 'volatile', 'storage'])
+                               types=['dispatchable', 'volatile', 'storage',
+                                      'conversion', 'backpressure'])
 
     supply.columns = supply.columns.droplevel([1,   2])
+    #
+    # if connection_results is not None:
+    #     ex = connection_results.loc[:, (es.groups[b], slice(None), 'flow')].sum(axis=1)
+    #     im = connection_results.loc[:, (slice(None), es.groups[b], 'flow')].sum(axis=1)
 
-    if connection_results is not None:
-        ex = connection_results.loc[:, (es.groups[b], slice(None), 'flow')].sum(axis=1)
-        im = connection_results.loc[:, (slice(None), es.groups[b], 'flow')].sum(axis=1)
-
-        supply['net_import'] =  im-ex
+    #      supply['net_import'] =  im-ex
 
     supply.to_excel(writer, b)
 
@@ -138,11 +142,10 @@ duals.columns = duals.columns.droplevel(1)
 #
 # transform_index(df=supply.T).groupby('tech').sum().T
 
-
-pp.component_results(
-    es, results, select='sequences')['excess'].to_excel(writer,
-                                                        'excess_electricity')
-
+#
+# pp.component_results(
+#      es, results, select='sequences')['excess'].to_excel(writer,
+#                                                          'excess_electricity')
 
 input_scalars = pd.concat([
     views.node(
@@ -169,16 +172,8 @@ pd.DataFrame({
             .to_excel(writer, 'meta_results')
 
 
-pd.concat([views.node(results, b, multiindex=True)['scalars'] for b in buses.index]).to_excel(writer, 'scalar_view')
+pd.concat([views.node(results, b, multiindex=True).get('scalars') for b in buses.index]).to_excel(writer, 'scalar_view')
 for b in buses.index:
     views.node(results, b, multiindex=True)['sequences'].to_excel(writer, b+'-seq')
 
 writer.save()
-
-# views.node(
-#     results,
-#     es.groups['system'],
-#     multiindex=True)
-
-
-es.nodes
