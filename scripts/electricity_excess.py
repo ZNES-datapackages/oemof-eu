@@ -15,7 +15,7 @@ buses.index.name = 'bus'
 elements = pd.DataFrame(buses.index)
 
 elements['type'] = 'excess'
-elements['name'] = 'excess-' + elements['bus'].str[:2]
+elements['name'] = 'excess-' + elements['bus'] 
 elements['marginal_cost'] = 0
 
 elements.set_index('name', inplace=True)

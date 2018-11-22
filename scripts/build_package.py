@@ -43,8 +43,10 @@ import capacity_factors_pv
 print('Building excess components ... ')
 import electricity_excess
 
-print('Building heat components ... ')
+print('Building heat generation ... ')
 import heat_generation
+
+print('Building heat load and profiles ...')
 import heat_load
 
 # add meta data from data using datapackage utils

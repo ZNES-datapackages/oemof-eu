@@ -49,6 +49,7 @@ elements.reset_index(inplace=True)
 elements['name'] = elements.apply(lambda row: row.bus + '_load', axis=1)
 elements['profile'] = elements.apply(lambda row: row.bus + '_profile', axis=1)
 elements['type'] = 'load'
+elements['carrier'] = 'electricity'
 elements.set_index('name', inplace=True)
 
 elements.bus = [b + '-electricity' for b in elements.bus]
