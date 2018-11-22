@@ -43,8 +43,11 @@ import capacity_factors_pv
 print('Building excess components ... ')
 import electricity_excess
 
-print('Building heat generation ... ')
-import heat_generation
+print('Building decentral heat generation ... ')
+import decentral_heat_generation
+
+print('Building central heat generation ... ')
+import central_heat_generation
 
 print('Building heat load and profiles ...')
 import heat_load

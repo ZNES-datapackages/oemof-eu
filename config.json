@@ -25,6 +25,15 @@
     "CH",
     "DE"
   ],
+  "decentral_heat_buses": [
+     "DE-decentral-heat"
+  ],
+  "central_heat_buses":[
+      "DE-central-heat"
+  ],
+  "global_buses": [
+      "GL-gas"
+  ],
   "investment_technologies": [
       "wind_onshore",
       "wind_offshore",
