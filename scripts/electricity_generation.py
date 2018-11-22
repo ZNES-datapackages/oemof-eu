@@ -16,8 +16,11 @@ techmap = {'ocgt': 'dispatchable',
 
 config = building.get_config()
 
-technologies = pd.DataFrame(Package('https://raw.githubusercontent.com/ZNES-datapackages/technology-cost/master/datapackage.json').get_resource('generation').read(keyed=True))
-technologies.set_index('tech', inplace=True)
+
+technologies = pd.DataFrame(Package('https://raw.githubusercontent.com/ZNES-datapackages/technology-cost/master/datapackage.json').get_resource('electricicty').read(keyed=True))
+technologies = technologies.groupby(['year', 'tech', 'carrier']).apply(lambda x: dict(zip(x.parameter, x.value))).reset_index('carrier').apply(lambda x: dict({'carrier': x.carrier}, **x[0]), axis=1)
+technologies = technologies.loc[config['year']].to_dict()
+
 
 potential = Package('https://raw.githubusercontent.com/ZNES-datapackages/technology-potential/master/datapackage.json').get_resource('renewable').read(keyed=True)
 potential = pd.DataFrame(potential).set_index(['country', 'tech']).to_dict()
@@ -29,7 +32,7 @@ element_dfs = {t: building.read_elements(t + '.csv') for t in config['sources']}
 
 elements = dict(zip([i for i in element_dfs.keys()], [{},{},{}]))
 
-for tech, data in technologies.iterrows():
+for tech, data in technologies.items():
     if tech in config['investment_technologies']:
         for r in config['regions']:
             element_name = tech + '-' + r
@@ -38,7 +41,7 @@ for tech, data in technologies.iterrows():
             if techmap[tech] == 'dispatchable':
                 element.update({
                     'capacity_cost': annuity(
-                        float(data['capacity_cost']), data['lifetime'], 0.07) * 1000,
+                        float(data['capacity_cost']), float(data['lifetime']), 0.07) * 1000,
                     'bus': r + '-electricity',
                     'type': 'dispatchable',
                     'marginal_cost': (
@@ -62,7 +65,7 @@ for tech, data in technologies.iterrows():
                     profile = 'pv-' + r + '-profile'
                 element.update({
                     'capacity_cost': annuity(
-                        float(data['capacity_cost']), data['lifetime'], 0.07) * 1000,
+                        float(data['capacity_cost']), float(data['lifetime']), 0.07) * 1000,
                     'capacity_potential': potential['capacity_potential'].get((r, tech), "Infinity"),
                     'bus': r + '-electricity',
                     'tech': tech,

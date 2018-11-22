@@ -9,14 +9,14 @@ from datapackage_utilities import building
 
 techmap = {
         'extraction': 'extraction',
-        'boiler': 'dispatchable',
+        'boiler_central': 'dispatchable',
     }
 
 config = building.get_config()
 
-heat_technologies = pd.DataFrame(
-                        Package('../technology-cost/datapackage.json').get_resource('heat').read(keyed=True))
-heat_technologies.set_index('tech', inplace=True)
+technologies = pd.DataFrame(Package('https://raw.githubusercontent.com/ZNES-datapackages/technology-cost/master/datapackage.json').get_resource('central_heat').read(keyed=True))
+technologies = technologies.groupby(['year', 'tech', 'carrier']).apply(lambda x: dict(zip(x.parameter, x.value))).reset_index('carrier').apply(lambda x: dict({'carrier': x.carrier}, **x[0]), axis=1)
+technologies = technologies.loc[config['year']].to_dict()
 
 carrier = pd.read_csv('archive/carrier.csv', index_col=[0,1]).loc[('base', config['year'])]
 carrier.set_index('carrier', inplace=True)
@@ -24,7 +24,7 @@ carrier.set_index('carrier', inplace=True)
 elements = list()
 
 for b in config.get('central_heat_buses', []):
-    for tech, entry in heat_technologies.iterrows():
+    for tech, entry in technologies.items():
         if entry['scale'] == 'central':
             element_name = tech + '-' + b
             print(element_name)

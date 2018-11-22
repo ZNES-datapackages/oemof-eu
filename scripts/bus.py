@@ -44,12 +44,20 @@ for b in buses.index:
         'balanced': True}
 
 # Add heat buses
-for b in config.get('heat_buses', []):
+for b in config.get('central_heat_buses', []):
     hub_elements[b] = {
         'type': 'bus',
         'carrier': 'heat',
         'geometry': None,
         'balanced': True}
+
+for b in config.get('decentral_heat_buses', []):
+    hub_elements[b] = {
+        'type': 'bus',
+        'carrier': 'heat',
+        'geometry': None,
+        'balanced': True}
+
 
 # Add global buses
 for b in config.get('global_buses', []):

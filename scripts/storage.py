@@ -18,13 +18,14 @@ techmap = {'ocgt': 'dispatchable',
 config = building.get_config()
 
 storages = pd.DataFrame(Package('https://raw.githubusercontent.com/ZNES-datapackages/technology-cost/master/datapackage.json').get_resource('storage').read(keyed=True))
-storages.set_index('tech', inplace=True)
+storages = storages.groupby(['year', 'tech', 'carrier']).apply(lambda x: dict(zip(x.parameter, x.value))).reset_index('carrier').apply(lambda x: dict({'carrier': x.carrier}, **x[0]), axis=1)
+storages = storages.loc[config['year']].to_dict()
 
 potential = Package('https://raw.githubusercontent.com/ZNES-datapackages/technology-potential/master/datapackage.json').get_resource('storage').read(keyed=True)
 potential = pd.DataFrame(potential).set_index(['country', 'tech']).to_dict()
 
 elements = {}
-for tech, data in storages.iterrows():
+for tech, data in storages.items():
     if tech in config['investment_technologies']:
         for r in config['regions']:
             element_name = tech + '_' + r
@@ -33,7 +34,7 @@ for tech, data in storages.iterrows():
             if techmap[tech] == 'storage':
                 element.update({
                     'capacity_cost': annuity(
-                        float(data['capacity_cost']) + float(data['storage_capacity_cost']) / float(data['capacity_ratio']), data['lifetime'], 0.07) * 1000,
+                        float(data['capacity_cost']) + float(data['storage_capacity_cost']) / float(data['capacity_ratio']), float(data['lifetime']), 0.07) * 1000,
                     'bus': r + '-electricity',
                     'tech': tech,
                     'type': 'storage',
