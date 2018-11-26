@@ -11,7 +11,7 @@ techmap = {
         'extraction': 'extraction',
         'boiler_decentral': 'dispatchable',
         'electricity_heatpump': 'conversion',
-        'gas_heatpump': 'conversion',
+        'gas_heatpump': 'dispatchable',
     }
 
 config = building.get_config()
@@ -23,15 +23,18 @@ technologies = technologies.loc[config['year']].to_dict()
 carrier = pd.read_csv('archive/carrier.csv', index_col=[0,1]).loc[('base', config['year'])]
 carrier.set_index('carrier', inplace=True)
 
-elements = list()
+elements = dict()
 
 for b in config.get('decentral_heat_buses', []):
     for tech, entry in technologies.items():
         element_name = tech + '-' + b
 
+        element = entry.copy()
+        
+        elements[element_name] = element
+
         if techmap.get(tech) == 'backpressure':
-            elements.append({
-                'name': element_name,
+            element.update({
                 'type': techmap[tech],
                 'fuel_bus': 'GL-gas',
                 'carrier': entry['carrier'],
@@ -49,8 +52,7 @@ for b in config.get('decentral_heat_buses', []):
             })
 
         elif techmap.get(tech) == 'extraction':
-            elements.append({
-                'name': element_name,
+            element.update({
                 'type': techmap[tech],
                 'carrier': entry['carrier'],
                 'fuel_bus': 'GL-gas',
@@ -69,14 +71,12 @@ for b in config.get('decentral_heat_buses', []):
             })
 
         elif techmap.get(tech) == 'dispatchable':
-            elements.append({
-                'name': element_name,
+            element.update({
                 'type': techmap[tech],
                 'carrier': entry['carrier'],
                 'marginal_cost': (carrier.at[entry['carrier'], 'cost'] /
                                   float(entry['efficiency'])),
-                'electricity_bus': 'DE-electricity',
-                'heat_bus': b,
+                'bus': b,
                 'edge_parameters': json.dumps(
                     {"emission_factor": carrier.at[entry['carrier'], 'emission']}),
                 'capacity_potential': 'Infinity',
@@ -86,13 +86,11 @@ for b in config.get('decentral_heat_buses', []):
             })
 
         elif techmap.get(tech) == 'conversion':
-            elements.append({
-                'name': element_name,
+            element.update({
                 'type': techmap[tech],
-                'fuel_bus': 'GL-gas',
                 'carrier': entry['carrier'],
-                'electricity_bus': 'DE-electricity',
-                'heat_bus': b,
+                'from_bus': 'DE-electricity',
+                'to_bus': b,
                 'efficiency': entry['efficiency'],
                 'capacity_potential': 'Infinity',
                 'tech': tech,
@@ -101,11 +99,12 @@ for b in config.get('decentral_heat_buses', []):
             })
 
 
-elements = pd.DataFrame(elements)
-elements.set_index('name', inplace=True)
+elements = pd.DataFrame.from_dict(elements, orient='index')
+
 
 for type in set(techmap.values()):
-    building.write_elements(type + '.csv', elements.loc[elements['type'] == type])
+    building.write_elements(type + '.csv',
+            elements.loc[elements['type'] == type].dropna(how='all', axis=1))
 
 
 
