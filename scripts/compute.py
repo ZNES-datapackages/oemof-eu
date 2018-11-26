@@ -73,7 +73,8 @@ for b in buses.index:
     supply = pp.supply_results(results=results, es=es,
                                bus=[b],
                                types=['dispatchable', 'volatile', 'storage',
-                                      'conversion', 'backpressure'])
+                                      'conversion', 'backpressure',
+                                      'extraction'])
 
     supply.columns = supply.columns.droplevel([1,   2])
     #
