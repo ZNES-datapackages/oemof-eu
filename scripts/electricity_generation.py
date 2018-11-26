@@ -83,4 +83,4 @@ df = df[(df[['capacity_potential']] != 0).all(axis=1)]
 # write elements to CSV-files
 for element_type in set(techmap.values()):
     path = building.write_elements(
-            element_type + '.csv', df.loc[df['type'] == element_type])
+            element_type + '.csv', df.loc[df['type'] == element_type].dropna(how='all', axis=1))
