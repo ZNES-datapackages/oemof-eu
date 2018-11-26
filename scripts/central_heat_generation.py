@@ -56,7 +56,7 @@ for b in config.get('central_heat_buses', []):
                 'type': techmap[tech],
                 'carrier': entry['carrier'],
                 'fuel_bus': 'GL-gas',
-                'fuel_cost': carrier.at[entry['carrier'], 'cost'],
+                'carrier_cost': carrier.at[entry['carrier'], 'cost'],
                 'electricity_bus': 'DE-electricity',
                 'heat_bus': b,
                 'thermal_efficiency': entry['thermal_efficiency'],

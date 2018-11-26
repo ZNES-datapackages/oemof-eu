@@ -53,25 +53,6 @@ for b in config.get('decentral_heat_buses', []):
                                          float(entry['lifetime']), 0.07) * 1000
             })
 
-        elif techmap.get(tech) == 'extraction':
-            element.update({
-                'type': techmap[tech],
-                'carrier': entry['carrier'],
-                'fuel_bus': 'GL-gas',
-                'fuel_cost': carrier.at[entry['carrier'], 'cost'],
-                'electricity_bus': 'DE-electricity',
-                'heat_bus': b,
-                'thermal_efficiency': entry['thermal_efficiency'],
-                'input_edge_parameters': json.dumps(
-                    {"emission_factor": carrier.at[entry['carrier'], 'emission']}),
-                'electric_efficiency': entry['electrical_efficiency'],
-                'condensing_efficiency': entry['condensing_efficiency'],
-                'capacity_potential': 'Infinity',
-                'tech': tech,
-                'capacity_cost': annuity(float(entry['capacity_cost']),
-                                         float(entry['lifetime']), 0.07) * 1000
-            })
-
         elif techmap.get(tech) == 'dispatchable':
             element.update({
                 'type': techmap[tech],
