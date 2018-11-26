@@ -14,7 +14,7 @@ for b in config.get('central_heat_buses', []):
         'name': b + '-load',
         'type': 'load',
         'bus': b,
-        'amount': 200 * 1e6, # 190.000.000 MWh i.e. 190 TWh
+        'amount': 200 * 1e6,
         'profile': 'DE-heat-profile',
         'carrier': 'heat'
         }
