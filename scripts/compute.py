@@ -62,7 +62,7 @@ results = m.results()
 buses = building.read_elements('bus.csv')
 ##############
 ############### CAUTION CLEAR THIS
-#connection_results = pp.component_results(es, results).get('connection')
+connection_results = pp.component_results(es, results).get('connection')
 
 
 
@@ -78,11 +78,11 @@ for b in buses.index:
 
     supply.columns = supply.columns.droplevel([1,   2])
     #
-    # if connection_results is not None:
-    #     ex = connection_results.loc[:, (es.groups[b], slice(None), 'flow')].sum(axis=1)
-    #     im = connection_results.loc[:, (slice(None), es.groups[b], 'flow')].sum(axis=1)
+    if connection_results is not None:
+        ex = connection_results.loc[:, (es.groups[b], slice(None), 'flow')].sum(axis=1)
+        im = connection_results.loc[:, (slice(None), es.groups[b], 'flow')].sum(axis=1)
 
-    #      supply['net_import'] =  im-ex
+        supply['net_import'] =  im-ex
 
     supply.to_excel(writer, b)
 
@@ -144,9 +144,9 @@ duals.columns = duals.columns.droplevel(1)
 # transform_index(df=supply.T).groupby('tech').sum().T
 
 #
-# pp.component_results(
-#      es, results, select='sequences')['excess'].to_excel(writer,
-#                                                          'excess_electricity')
+pp.component_results(
+     es, results, select='sequences')['excess'].to_excel(writer,
+                                                         'excess_electricity')
 
 input_scalars = pd.concat([
     views.node(
