@@ -78,13 +78,16 @@ for b in buses.index:
 
     supply.columns = supply.columns.droplevel([1,   2])
     #
-    if connection_results is not None:
+    if connection_results is not None and es.groups[b] in list(connection_results.columns.levels[0]):
         ex = connection_results.loc[:, (es.groups[b], slice(None), 'flow')].sum(axis=1)
         im = connection_results.loc[:, (slice(None), es.groups[b], 'flow')].sum(axis=1)
 
         supply['net_import'] =  im-ex
 
     supply.to_excel(writer, b)
+
+
+
 
 
 # import matplotlib.pyplot as plt
