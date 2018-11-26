@@ -8,7 +8,7 @@ from oemof.tools.economics import annuity
 from datapackage_utilities import building
 
 techmap = {
-        'extraction': 'extraction',
+        'backpressure': 'backpressure',
         'boiler_decentral': 'dispatchable',
         'electricity_heatpump': 'conversion',
         'gas_heatpump': 'dispatchable',
@@ -30,7 +30,7 @@ for b in config.get('decentral_heat_buses', []):
         element_name = tech + '-' + b
 
         element = entry.copy()
-        
+
         elements[element_name] = element
 
         if techmap.get(tech) == 'backpressure':
