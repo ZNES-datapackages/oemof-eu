@@ -17,7 +17,7 @@ techmap = {'ocgt': 'dispatchable',
 config = building.get_config()
 
 
-technologies = pd.DataFrame(Package('https://raw.githubusercontent.com/ZNES-datapackages/technology-cost/master/datapackage.json').get_resource('electricicty').read(keyed=True))
+technologies = pd.DataFrame(Package('https://raw.githubusercontent.com/ZNES-datapackages/technology-cost/master/datapackage.json').get_resource('electricity').read(keyed=True))
 technologies = technologies.groupby(['year', 'tech', 'carrier']).apply(lambda x: dict(zip(x.parameter, x.value))).reset_index('carrier').apply(lambda x: dict({'carrier': x.carrier}, **x[0]), axis=1)
 technologies = technologies.loc[config['year']].to_dict()
 
@@ -28,20 +28,20 @@ potential = pd.DataFrame(potential).set_index(['country', 'tech']).to_dict()
 carrier = pd.read_csv('archive/carrier.csv', index_col=[0,1]).loc[('base', config['year'])]
 carrier.set_index('carrier', inplace=True)
 
-element_dfs = {t: building.read_elements(t + '.csv') for t in config['sources']}
+elements = {}
 
-elements = dict(zip([i for i in element_dfs.keys()], [{},{},{}]))
+for r in config['regions']:
+    for tech, data in technologies.items():
+        if tech in config['investment_technologies']:
 
-for tech, data in technologies.items():
-    if tech in config['investment_technologies']:
-        for r in config['regions']:
-            element_name = tech + '-' + r
-            element = dict(data)
+            element = data.copy()
+            elements[tech + '-' + r] = element
 
             if techmap[tech] == 'dispatchable':
                 element.update({
                     'capacity_cost': annuity(
-                        float(data['capacity_cost']), float(data['lifetime']), 0.07) * 1000,
+                        float(data['capacity_cost']),
+                        float(data['lifetime']), 0.07) * 1000, # €/kW -> €/M
                     'bus': r + '-electricity',
                     'type': 'dispatchable',
                     'marginal_cost': (
@@ -49,7 +49,8 @@ for tech, data in technologies.items():
                         carrier.loc[data['carrier']].emission *
                         carrier.loc['co2'].cost) / float(data['efficiency']),
                     'tech': tech,
-''                        'capacity_potential': potential['capacity_potential'].get((r, tech), "Infinity"),
+                    'capacity_potential': potential['capacity_potential'].get(
+                                            (r, tech), "Infinity"),
                     'edge_parameters': json.dumps({
                         "emission_factor":  (carrier.loc[data['carrier']].emission /
                                               float(data['efficiency']))
@@ -65,17 +66,21 @@ for tech, data in technologies.items():
                     profile = 'pv-' + r + '-profile'
                 element.update({
                     'capacity_cost': annuity(
-                        float(data['capacity_cost']), float(data['lifetime']), 0.07) * 1000,
-                    'capacity_potential': potential['capacity_potential'].get((r, tech), "Infinity"),
+                        float(data['capacity_cost']),
+                        float(data['lifetime']), 0.07) * 1000,
+                    'capacity_potential': potential['capacity_potential'].get(
+                                            (r, tech), "Infinity"),
                     'bus': r + '-electricity',
                     'tech': tech,
                     'type': 'volatile',
                     'profile': profile})
 
-            elements[techmap[tech]][element_name] = element
+
+df = pd.DataFrame.from_dict(elements, orient='index')
+
+df = df[(df[['capacity_potential']] != 0).all(axis=1)]
 
 # write elements to CSV-files
-for element_type in element_dfs:
+for element_type in set(techmap.values()):
     path = building.write_elements(
-            element_type + '.csv',
-            pd.DataFrame.from_dict(elements[element_type], orient='index'))
+            element_type + '.csv', df.loc[df['type'] == element_type])

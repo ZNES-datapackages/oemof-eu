@@ -25,79 +25,78 @@ elements = list()
 
 for b in config.get('central_heat_buses', []):
     for tech, entry in technologies.items():
-        if entry['scale'] == 'central':
-            element_name = tech + '-' + b
-            print(element_name)
+        element_name = tech + '-' + b
 
-            if techmap.get(tech) == 'backpressure':
-                elements.append({
-                    'name': element_name,
-                    'type': techmap[tech],
-                    'fuel_bus': 'GL-gas',
-                    'carrier': entry['carrier'],
-                    'fuel_cost': carrier.at[entry['carrier'], 'cost'],
-                    'electricity_bus': 'DE-electricity',
-                    'heat_bus': b,
-                    'thermal_efficiency': entry['thermal_efficiency'],
-                    'input_edge_parameters': json.dumps(
-                        {"emission_factor": carrier.at[entry['carrier'], 'emission']}),
-                    'electric_efficiency': entry['electrical_efficiency'],
-                    'capacity_potential': 'Infinity',
-                    'tech': tech,
-                    'capacity_cost': annuity(float(entry['capacity_cost']),
-                                             entry['lifetime'], 0.07)
-                })
 
-            elif techmap.get(tech) == 'extraction':
-                elements.append({
-                    'name': element_name,
-                    'type': techmap[tech],
-                    'carrier': entry['carrier'],
-                    'fuel_bus': 'GL-gas',
-                    'fuel_cost': carrier.at[entry['carrier'], 'cost'],
-                    'electricity_bus': 'DE-electricity',
-                    'heat_bus': b,
-                    'thermal_efficiency': entry['thermal_efficiency'],
-                    'input_edge_parameters': json.dumps(
-                        {"emission_factor": carrier.at[entry['carrier'], 'emission']}),
-                    'electric_efficiency': entry['electrical_efficiency'],
-                    'condensing_efficiency': entry['condensing_efficiency'],
-                    'capacity_potential': 'Infinity',
-                    'tech': tech,
-                    'capacity_cost': annuity(float(entry['capacity_cost']),
-                                             entry['lifetime'], 0.07)
-                })
+        if techmap.get(tech) == 'backpressure':
+            elements.append({
+                'name': element_name,
+                'type': techmap[tech],
+                'fuel_bus': 'GL-gas',
+                'carrier': entry['carrier'],
+                'fuel_cost': carrier.at[entry['carrier'], 'cost'],
+                'electricity_bus': 'DE-electricity',
+                'heat_bus': b,
+                'thermal_efficiency': entry['thermal_efficiency'],
+                'input_edge_parameters': json.dumps(
+                    {"emission_factor": carrier.at[entry['carrier'], 'emission']}),
+                'electric_efficiency': entry['electrical_efficiency'],
+                'capacity_potential': 'Infinity',
+                'tech': tech,
+                'capacity_cost': annuity(float(entry['capacity_cost']),
+                                         float(entry['lifetime']), 0.07)
+            })
 
-            elif techmap.get(tech) == 'dispatchable':
-                elements.append({
-                    'name': element_name,
-                    'type': techmap[tech],
-                    'carrier': entry['carrier'],
-                    'marginal_cost': carrier.at[entry['carrier'], 'cost'] / float(entry['thermal_efficiency']),
-                    'electricity_bus': 'DE-electricity',
-                    'heat_bus': b,
-                    'edge_parameters': json.dumps(
-                        {"emission_factor": carrier.at[entry['carrier'], 'emission']}),
-                    'capacity_potential': 'Infinity',
-                    'tech': tech,
-                    'capacity_cost': annuity(float(entry['capacity_cost']),
-                                             entry['lifetime'], 0.07)
-                })
+        elif techmap.get(tech) == 'extraction':
+            elements.append({
+                'name': element_name,
+                'type': techmap[tech],
+                'carrier': entry['carrier'],
+                'fuel_bus': 'GL-gas',
+                'fuel_cost': carrier.at[entry['carrier'], 'cost'],
+                'electricity_bus': 'DE-electricity',
+                'heat_bus': b,
+                'thermal_efficiency': entry['thermal_efficiency'],
+                'input_edge_parameters': json.dumps(
+                    {"emission_factor": carrier.at[entry['carrier'], 'emission']}),
+                'electric_efficiency': entry['electrical_efficiency'],
+                'condensing_efficiency': entry['condensing_efficiency'],
+                'capacity_potential': 'Infinity',
+                'tech': tech,
+                'capacity_cost': annuity(float(entry['capacity_cost']),
+                                         float(entry['lifetime']), 0.07)
+            })
 
-            elif techmap.get(tech) == 'conversion':
-                elements.append({
-                    'name': element_name,
-                    'type': techmap[tech],
-                    'fuel_bus': 'GL-gas',
-                    'carrier': entry['carrier'],
-                    'electricity_bus': 'DE-electricity',
-                    'heat_bus': b,
-                    'efficiency': entry['thermal_efficiency'],
-                    'capacity_potential': 'Infinity',
-                    'tech': tech,
-                    'capacity_cost': annuity(float(entry['capacity_cost']),
-                                             entry['lifetime'], 0.07)
-                })
+        elif techmap.get(tech) == 'dispatchable':
+            elements.append({
+                'name': element_name,
+                'type': techmap[tech],
+                'carrier': entry['carrier'],
+                'marginal_cost': carrier.at[entry['carrier'], 'cost'] / float(entry['efficiency']),
+                'electricity_bus': 'DE-electricity',
+                'heat_bus': b,
+                'edge_parameters': json.dumps(
+                    {"emission_factor": carrier.at[entry['carrier'], 'emission']}),
+                'capacity_potential': 'Infinity',
+                'tech': tech,
+                'capacity_cost': annuity(float(entry['capacity_cost']),
+                                         float(entry['lifetime']), 0.07)
+            })
+
+        elif techmap.get(tech) == 'conversion':
+            elements.append({
+                'name': element_name,
+                'type': techmap[tech],
+                'fuel_bus': 'GL-gas',
+                'carrier': entry['carrier'],
+                'electricity_bus': 'DE-electricity',
+                'heat_bus': b,
+                'efficiency': entry['thermal_efficiency'],
+                'capacity_potential': 'Infinity',
+                'tech': tech,
+                'capacity_cost': annuity(float(entry['capacity_cost']),
+                                         float(entry['lifetime']), 0.07)
+            })
 
 
 elements = pd.DataFrame(elements)

@@ -28,7 +28,6 @@ elements = list()
 for b in config.get('decentral_heat_buses', []):
     for tech, entry in technologies.items():
         element_name = tech + '-' + b
-        print(element_name)
 
         if techmap.get(tech) == 'backpressure':
             elements.append({
@@ -46,7 +45,7 @@ for b in config.get('decentral_heat_buses', []):
                 'capacity_potential': 'Infinity',
                 'tech': tech,
                 'capacity_cost': annuity(float(entry['capacity_cost']),
-                                         entry['lifetime'], 0.07)
+                                         float(entry['lifetime']), 0.07)
             })
 
         elif techmap.get(tech) == 'extraction':
@@ -66,7 +65,7 @@ for b in config.get('decentral_heat_buses', []):
                 'capacity_potential': 'Infinity',
                 'tech': tech,
                 'capacity_cost': annuity(float(entry['capacity_cost']),
-                                         entry['lifetime'], 0.07)
+                                         float(entry['lifetime']), 0.07)
             })
 
         elif techmap.get(tech) == 'dispatchable':
@@ -74,7 +73,8 @@ for b in config.get('decentral_heat_buses', []):
                 'name': element_name,
                 'type': techmap[tech],
                 'carrier': entry['carrier'],
-                'marginal_cost': carrier.at[entry['carrier'], 'cost'] / float(entry['thermal_efficiency']),
+                'marginal_cost': (carrier.at[entry['carrier'], 'cost'] /
+                                  float(entry['efficiency'])),
                 'electricity_bus': 'DE-electricity',
                 'heat_bus': b,
                 'edge_parameters': json.dumps(
@@ -82,7 +82,7 @@ for b in config.get('decentral_heat_buses', []):
                 'capacity_potential': 'Infinity',
                 'tech': tech,
                 'capacity_cost': annuity(float(entry['capacity_cost']),
-                                         entry['lifetime'], 0.07)
+                                         float(entry['lifetime']), 0.07)
             })
 
         elif techmap.get(tech) == 'conversion':
@@ -93,11 +93,11 @@ for b in config.get('decentral_heat_buses', []):
                 'carrier': entry['carrier'],
                 'electricity_bus': 'DE-electricity',
                 'heat_bus': b,
-                'efficiency': entry['thermal_efficiency'],
+                'efficiency': entry['efficiency'],
                 'capacity_potential': 'Infinity',
                 'tech': tech,
                 'capacity_cost': annuity(float(entry['capacity_cost']),
-                                         entry['lifetime'], 0.07)
+                                         float(entry['lifetime']), 0.07)
             })
 
 

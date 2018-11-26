@@ -14,7 +14,7 @@ for b in config.get('central_heat_buses', []):
         'name': b + '-load',
         'type': 'load',
         'bus': b,
-        'amount': 190 * 1e6, # 190.000.000 MWh i.e. 190 TWh
+        'amount': 200 * 1e6, # 190.000.000 MWh i.e. 190 TWh
         'profile': 'DE-heat-profile',
         'carrier': 'heat'
         }
@@ -25,7 +25,7 @@ for b in config.get('decentral_heat_buses', []):
         'name': b + '-load',
         'type': 'load',
         'bus': b,
-        'amount': 190 * 1e6, # 190.000.000 MWh i.e. 190 TWh
+        'amount': 200 * 1e6,
         'profile': 'DE-heat-profile',
         'carrier': 'heat'
         }
@@ -33,7 +33,6 @@ for b in config.get('decentral_heat_buses', []):
 
 path = building.write_elements(
     'load.csv', pd.DataFrame(elements).set_index('name'))
-
 
 heat_demand_profile = pd.Series(
     data=pd.read_csv('archive/thermal_load_profile.csv', sep=";")['thermal_load'].values,
