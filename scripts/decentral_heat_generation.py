@@ -12,6 +12,7 @@ techmap = {
         'boiler_decentral': 'dispatchable',
         'electricity_heatpump': 'conversion',
         'gas_heatpump': 'dispatchable',
+        'hotwatertank_decentral': 'storage'
     }
 
 config = building.get_config()
@@ -19,6 +20,11 @@ config = building.get_config()
 technologies = pd.DataFrame(Package('https://raw.githubusercontent.com/ZNES-datapackages/technology-cost/master/datapackage.json').get_resource('decentral_heat').read(keyed=True))
 technologies = technologies.groupby(['year', 'tech', 'carrier']).apply(lambda x: dict(zip(x.parameter, x.value))).reset_index('carrier').apply(lambda x: dict({'carrier': x.carrier}, **x[0]), axis=1)
 technologies = technologies.loc[config['year']].to_dict()
+
+storages = pd.DataFrame(Package('https://raw.githubusercontent.com/ZNES-datapackages/technology-cost/master/datapackage.json').get_resource('storage').read(keyed=True))
+storages = storages.groupby(['year', 'tech', 'carrier']).apply(lambda x: dict(zip(x.parameter, x.value))).reset_index('carrier').apply(lambda x: dict({'carrier': x.carrier}, **x[0]), axis=1)
+
+technologies.update(storages[config['year']].to_dict())
 
 carrier = pd.read_csv('archive/carrier.csv', index_col=[0,1]).loc[('base', config['year'])]
 carrier.set_index('carrier', inplace=True)
@@ -96,6 +102,18 @@ for b in config.get('decentral_heat_buses', []):
                 'tech': tech,
                 'capacity_cost': annuity(float(entry['capacity_cost']),
                                          float(entry['lifetime']), 0.07)
+            })
+
+        elif techmap.get(tech) == 'storage':
+            element.update({
+                'storage_capacity_cost': annuity(
+                        float(entry['storage_capacity_cost']),
+                        float(entry['lifetime']), 0.07) * 1000,
+                'bus': b,
+                'tech': tech,
+                'type': 'storage',
+                'efficiency': entry['efficiency'],
+                'capacity_ratio': entry['capacity_ratio']
             })
 
 
