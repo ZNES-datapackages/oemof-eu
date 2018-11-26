@@ -12,7 +12,8 @@ techmap = {'ocgt': 'dispatchable',
            'pv': 'volatile',
            'wind_onshore': 'volatile',
            'wind_offshore': 'volatile',
-           'biomass': 'dispatchable'}
+           'biomass': 'dispatchable',
+           'battery': 'storage'}
 
 config = building.get_config()
 
@@ -37,7 +38,7 @@ for r in config['regions']:
             element = data.copy()
             elements[tech + '-' + r] = element
 
-            if techmap[tech] == 'dispatchable':
+            if techmap.get(tech) == 'dispatchable':
                 element.update({
                     'capacity_cost': annuity(
                         float(data['capacity_cost']),
@@ -57,7 +58,7 @@ for r in config['regions']:
                         })
                     })
 
-            elif techmap[tech] == 'volatile':
+            elif techmap.get(tech) == 'volatile':
                 if 'wind_off' in tech:
                     profile = 'wind-off-' + r + '-profile'
                 elif 'wind_on' in tech:
@@ -74,6 +75,19 @@ for r in config['regions']:
                     'tech': tech,
                     'type': 'volatile',
                     'profile': profile})
+
+            elif techmap[tech] == 'storage':
+                element.update({
+                    'capacity_cost': annuity(
+                        float(data['capacity_cost']) +
+                        float(data['storage_capacity_cost']) / float(data['capacity_ratio']),
+                        float(data['lifetime']), 0.07) * 1000,
+                    'bus': r + '-electricity',
+                    'tech': tech,
+                    'type': 'storage',
+''                  'capacity_potential': potential['capacity_potential'].get((r, tech), "Infinity"),
+                    'capacity_ratio': data['capacity_ratio']
+                })
 
 
 df = pd.DataFrame.from_dict(elements, orient='index')

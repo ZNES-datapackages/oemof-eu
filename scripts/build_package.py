@@ -19,11 +19,8 @@ import electricity_load
 print('Building grid ...')
 import grid
 
-print('Building generation technologies ... ')
+print('Building electricity generation technologies ... ')
 import electricity_generation
-
-print('Building storage technologies ... ')
-import storage
 
 print('Building existing technologies ... ')
 import existing_generation

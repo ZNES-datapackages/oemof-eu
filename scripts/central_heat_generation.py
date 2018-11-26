@@ -105,6 +105,7 @@ for b in config.get('central_heat_buses', []):
                 'bus': b,
                 'tech': tech,
                 'type': 'storage',
+                'capacity_potential': 'Infinity',
                 'efficiency': entry['efficiency'],
                 'capacity_ratio': entry['capacity_ratio']
             })
