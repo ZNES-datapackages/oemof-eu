@@ -10,6 +10,7 @@ from datapackage_utilities import building
 techmap = {
         'extraction': 'extraction',
         'boiler_central': 'dispatchable',
+        'hotwatertank_central': 'storage'
     }
 
 config = building.get_config()
@@ -47,7 +48,7 @@ for b in config.get('central_heat_buses', []):
                 'capacity_potential': 'Infinity',
                 'tech': tech,
                 'capacity_cost': annuity(float(entry['capacity_cost']),
-                                         float(entry['lifetime']), 0.07)
+                                         float(entry['lifetime']), 0.07) * 1000
             })
 
         elif techmap.get(tech) == 'extraction':
@@ -66,7 +67,7 @@ for b in config.get('central_heat_buses', []):
                 'capacity_potential': 'Infinity',
                 'tech': tech,
                 'capacity_cost': annuity(float(entry['capacity_cost']),
-                                         float(entry['lifetime']), 0.07)
+                                         float(entry['lifetime']), 0.07) * 1000
             })
 
         elif techmap.get(tech) == 'dispatchable':
@@ -80,7 +81,7 @@ for b in config.get('central_heat_buses', []):
                 'capacity_potential': 'Infinity',
                 'tech': tech,
                 'capacity_cost': annuity(float(entry['capacity_cost']),
-                                         float(entry['lifetime']), 0.07)
+                                         float(entry['lifetime']), 0.07) * 1000
             })
 
         elif techmap.get(tech) == 'conversion':
@@ -93,7 +94,19 @@ for b in config.get('central_heat_buses', []):
                 'capacity_potential': 'Infinity',
                 'tech': tech,
                 'capacity_cost': annuity(float(entry['capacity_cost']),
-                                         float(entry['lifetime']), 0.07)
+                                         float(entry['lifetime']), 0.07) * 1000
+            })
+
+        elif techmap.get(tech) == 'storage':
+            element.update({
+                'storage_capacity_cost': annuity(
+                        float(entry['storage_capacity_cost']),
+                        float(entry['lifetime']), 0.07) * 1000,
+                'bus': b,
+                'tech': tech,
+                'type': 'storage',
+                'efficiency': entry['efficiency'],
+                'capacity_ratio': entry['capacity_ratio']
             })
 
 
