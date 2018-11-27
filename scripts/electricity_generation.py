@@ -16,7 +16,7 @@ techmap = {'ocgt': 'dispatchable',
            'battery': 'storage'}
 
 config = building.get_config()
-
+wacc = config['wacc']
 
 technologies = pd.DataFrame(Package('https://raw.githubusercontent.com/ZNES-datapackages/technology-cost/master/datapackage.json').get_resource('electricity').read(keyed=True))
 technologies = technologies.groupby(['year', 'tech', 'carrier']).apply(lambda x: dict(zip(x.parameter, x.value))).reset_index('carrier').apply(lambda x: dict({'carrier': x.carrier}, **x[0]), axis=1)
@@ -24,7 +24,8 @@ technologies = technologies.loc[config['year']].to_dict()
 
 
 potential = Package('https://raw.githubusercontent.com/ZNES-datapackages/technology-potential/master/datapackage.json').get_resource('renewable').read(keyed=True)
-potential = pd.DataFrame(potential).set_index(['country', 'tech']).to_dict()
+potential = pd.DataFrame(potential).set_index(['country', 'tech'])
+potential = potential.loc[potential['source'] == 'Brown & Schlachtberger'].to_dict()
 
 carrier = pd.read_csv('archive/carrier.csv', index_col=[0,1]).loc[('base', config['year'])]
 carrier.set_index('carrier', inplace=True)
@@ -42,7 +43,7 @@ for r in config['regions']:
                 element.update({
                     'capacity_cost': annuity(
                         float(data['capacity_cost']),
-                        float(data['lifetime']), 0.07) * 1000, # €/kW -> €/M
+                        float(data['lifetime']), wacc) * 1000, # €/kW -> €/M
                     'bus': r + '-electricity',
                     'type': 'dispatchable',
                     'marginal_cost': (
@@ -68,7 +69,7 @@ for r in config['regions']:
                 element.update({
                     'capacity_cost': annuity(
                         float(data['capacity_cost']),
-                        float(data['lifetime']), 0.07) * 1000,
+                        float(data['lifetime']), wacc) * 1000,
                     'capacity_potential': potential['capacity_potential'].get(
                                             (r, tech), "Infinity"),
                     'bus': r + '-electricity',
@@ -81,7 +82,7 @@ for r in config['regions']:
                     'capacity_cost': annuity(
                         float(data['capacity_cost']) +
                         float(data['storage_capacity_cost']) / float(data['capacity_ratio']),
-                        float(data['lifetime']), 0.07) * 1000,
+                        float(data['lifetime']), wacc) * 1000,
                     'bus': r + '-electricity',
                     'tech': tech,
                     'type': 'storage',
