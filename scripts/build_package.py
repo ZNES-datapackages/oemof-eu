@@ -18,7 +18,7 @@ import electricity_load
 
 if config['optimize_grid']:
     print('Using optimized grid ...')
-    import optimized_grid
+    import future_grid
 else:
     print('Using existing grid ...')
     import status_quo_grid

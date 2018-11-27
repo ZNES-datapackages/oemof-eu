@@ -27,6 +27,9 @@ building.download_data(
 # get nuts 1 regions for german neighbours
 nuts0 = pd.Series(geometry.nuts(filepath, nuts=0, tolerance=0.1))
 
+
+
+
 buses = pd.Series(name='geometry')
 buses.index.name= 'name'
 
@@ -38,34 +41,35 @@ building.write_geometries('bus.geojson', buses)
 hub_elements = {}
 for b in buses.index:
     hub_elements[b] = {
-        'type': 'bus',
+        'type': 'electricalbus',
         'carrier': 'electricity',
         'geometry': b,
         'balanced': True}
 
 # Add heat buses
-for b in config.get('central_heat_buses', []):
-    hub_elements[b] = {
-        'type': 'bus',
-        'carrier': 'heat',
-        'geometry': None,
-        'balanced': True}
+if config['include_heating']:
+    for b in config.get('central_heat_buses', []):
+        hub_elements[b] = {
+            'type': 'bus',
+            'carrier': 'heat',
+            'geometry': None,
+            'balanced': True}
 
-for b in config.get('decentral_heat_buses', []):
-    hub_elements[b] = {
-        'type': 'bus',
-        'carrier': 'heat',
-        'geometry': None,
-        'balanced': True}
+    for b in config.get('decentral_heat_buses', []):
+        hub_elements[b] = {
+            'type': 'bus',
+            'carrier': 'heat',
+            'geometry': None,
+            'balanced': True}
 
 
-# Add global buses
-for b in config.get('global_buses', []):
-    hub_elements[b] = {
-        'type': 'bus',
-        'carrier': b.split('-')[1],
-        'geometry': None,
-        'balanced': False}
+    # Add global buses
+    for b in config.get('global_buses', []):
+        hub_elements[b] = {
+            'type': 'bus',
+            'carrier': b.split('-')[1],
+            'geometry': None,
+            'balanced': False}
 
 path = building.write_elements(
             'bus.csv',
