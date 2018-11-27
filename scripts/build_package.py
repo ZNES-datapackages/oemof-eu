@@ -16,8 +16,12 @@ import bus
 print('Building electricity load and profiles ...')
 import electricity_load
 
-print('Building grid ...')
-import grid
+if config['optimize_grid']:
+    print('Using optimized grid ...')
+    import optimized_grid
+else:
+    print('Using existing grid ...')
+    import status_quo_grid
 
 print('Building electricity generation technologies ... ')
 import electricity_generation
@@ -40,14 +44,14 @@ import capacity_factors_pv
 print('Building excess components ... ')
 import electricity_excess
 
-print('Building decentral heat generation ... ')
-import decentral_heat_generation
+if config['include_heating']:
+    print("Including heat component ... ")
 
-print('Building central heat generation ... ')
-import central_heat_generation
+    import decentral_heat_generation
 
-print('Building heat load and profiles ...')
-import heat_load
+    import central_heat_generation
+
+    import heat_load
 
 # add meta data from data using datapackage utils
 building.infer_metadata(package_name='angus_base_scenario',

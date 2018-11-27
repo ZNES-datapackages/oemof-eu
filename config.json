@@ -8,6 +8,8 @@
     "resources": "resources",
     "scripts": "scripts"
   },
+  "optimize_grid": true,
+  "include_heating": false,
   "year": 2050,
   "weather_year": 2011,
   "demand_year": 2011,
