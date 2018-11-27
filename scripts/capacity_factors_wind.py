@@ -37,6 +37,9 @@ for c in config['regions']:
     # add offshore profile if country exists in offshore data columns
     if [col for col in offshore_data.columns if c + '_OFF' in col]:
         sequences_df['wind-off-' + c + '-profile'] = offshore_data[c + '_OFF']
+    # hack as poland is not in ninja, therfore we take SE offshore profile
+    elif c == 'PL':
+        sequences_df['wind-off-' + c + '-profile'] = offshore_data['SE_OFF']
 
     sequence_name = 'wind-' + c + '-profile'
 
