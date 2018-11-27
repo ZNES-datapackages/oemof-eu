@@ -113,6 +113,7 @@ df_2050 = _prepare_frame(df_2050).set_index(['Links'])
 df_2030  = _prepare_frame(df_2030).set_index(['Links'])
 
 
+
 ##############################################################################
 # Centroid - Centroid Country distance lenght
 
@@ -149,7 +150,7 @@ df_2030  = _prepare_frame(df_2030).set_index(['Links'])
 scenario = '100% RES'
 
 elements = {}
-for idx, row in df_2030.iterrows():
+for idx, row in df_2050.iterrows():
     if row['from'] in config['regions'] and \
         row['to'] in config['regions']:
         predecessor = row['from'] + '-electricity'
@@ -163,7 +164,7 @@ for idx, row in df_2030.iterrows():
             'from_bus': predecessor,
             'to_bus': successor,
             'tech': 'transshipment',
-            'capacity': row[scenario] + df_2050.loc[idx][scenario],
+            'capacity': row[scenario] + df_2030.loc[idx][scenario],
             #'capacity_cost': annuity(row['Length'] * 1.2 * 400, 50, 0.07), # €/MWkma
             'length': row['Length'] * 1.2}
 
