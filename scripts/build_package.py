@@ -27,7 +27,7 @@ print('Building electricity generation technologies ... ')
 import electricity_generation
 
 print('Building existing technologies ... ')
-import existing_generation
+import hydro_generation
 
 print('Building hydro profiles ... ')
 import run_of_river_profiles
