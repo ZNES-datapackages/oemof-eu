@@ -49,10 +49,10 @@ scripts to process input data are also provided.
 
 ...
 
-
-
 ## Costs
 
 * Input data costs and technology information are provided in
 [technology-cost](https://github.com/ZNES-datapackages/technology-cost) datapackage.
 * Annuity for capital costs has been calculated with 0.07 interest rate
+* Fuel and CO2 costs have are based on XX and can also be found in technology-cost
+  datapackage for different years.
