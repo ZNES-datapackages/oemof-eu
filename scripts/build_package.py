@@ -51,12 +51,10 @@ if config['include_heating']:
 building.infer_metadata(package_name='angus_base_scenario',
                         foreign_keys={
                             'bus': ['volatile', 'dispatchable', 'storage',
-                                    'heat_storage',
-                                    'load', 'run_of_river', 'reservoir',
-                                    'pumped_storage', 'excess', 'boiler'],
-                            'profile': ['load', 'volatile', 'run_of_river',
-                                        'heat_load'],
-                            'from_to_bus': ['connection', 'conversion'],
+                                    'heat_storage', 'load', 'ror', 'reservoir',
+                                    'phs', 'excess', 'boiler'],
+                            'profile': ['load', 'volatile', 'heat_load'],
+                            'from_to_bus': ['connection', 'conversion', 'line'],
                             'chp': ['backpressure', 'extraction']
                             }
                         )

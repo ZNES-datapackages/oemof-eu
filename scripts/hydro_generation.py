@@ -118,7 +118,7 @@ for country in config['regions']:
                         'tech': tech,
                         'carrier': 'hydro',
                         'bus': country + '-electricity',
-                        'edge_parameters': _embed(production),
+                        'edge_parameters': _embed(production / df.at[country, tech]),
                         'capacity': df.at[country, tech]
                     }, **technologies[tech])
 
