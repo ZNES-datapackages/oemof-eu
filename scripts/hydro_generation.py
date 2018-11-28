@@ -77,6 +77,10 @@ df.rename(columns={
             'Hydro with reservoir (MW)': 'reservoir'},
         inplace=True)
 
+hydro_shares_wo_phs = hydro_shares.copy()
+hydro_shares_wo_phs['ror'] = hydro_shares['ror'] / (hydro_shares['reservoir'] + hydro_shares['ror'])
+hydro_shares_wo_phs['reservoir'] = hydro_shares['reservoir'] / (hydro_shares['reservoir'] + hydro_shares['ror'])
+
 elements = {}
 
 for country in config['regions']:
@@ -110,7 +114,7 @@ for country in config['regions']:
                     if country not in ['LU', 'NL']:
                         production = (
                             total_hydro[country] *
-                            float(hydro_shares.at[country, 'reservoir']))
+                            float(hydro_shares_wo_phs.at[country, 'reservoir']))
                     else:
                         production = 0
                     elements[element_name] = dict({
