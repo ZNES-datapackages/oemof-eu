@@ -17,15 +17,22 @@ from renpass import options, cli
 from renpass import postprocessing as pp
 from datapackage_utilities import aggregation, building
 
-aggregate = True
-emission_limit = 250*1e6 * 0.2
+
+
+config = building.get_config()
+
+temporal_resolution = config['temporal_resolution']
+emission_limit = config['emission_limit']
+
 time = {}
 
 from oemof.network import Bus
 
-if aggregate:
+if  temporal_resolution > 1:
     logging.info("Aggregating for temporal aggregation ... ")
-    path = aggregation.temporal_skip('datapackage.json', 3, path='/tmp') + '/'
+    path = aggregation.temporal_skip('datapackage.json',
+                                     temporal_resolution,
+                                     path='/tmp') + '/'
 else:
     path = ''
 
