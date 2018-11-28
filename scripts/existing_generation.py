@@ -29,81 +29,59 @@ else:
     except XLRDError as e:
         raise XLRDError('Downloaded file not valid xlsx file.')
 
-
 df = df.loc[config['regions']]
 
-marginal_cost = {
-    'reservoir': 0,
-}
+techmap = {
+    'ror': 'volatile',
+    'phs': 'storage',
+    'reservoir': 'dispatchable'}
 
-ror_mapper = {
-    'RoR (MW)': 'ror'}
+df.rename(columns={
+            'RoR (MW)': 'ror',
+            'PSP (MW)': 'phs',
+            'Hydro with reservoir (MW)': 'reservoir'},
+        inplace=True)
 
-storage_mapper = {
-    'PSP (MW)': 'phs'}
+elements = {}
 
-reservoir_mapper = {
-    'Hydro with reservoir (MW)': 'rs'}
-
-types = ['pumped_storage', 'reservoir', 'run_of_river']
-
-mappers = dict(zip(types,
-                   [storage_mapper, reservoir_mapper, ror_mapper]))
-
-element_dfs = dict(zip(types,
-                       [building.read_elements('pumped_storage.csv'),
-                        building.read_elements('reservoir.csv'),
-                        building.read_elements('run_of_river.csv')]))
-
-elements = dict(zip(types, [{}, {}, {}]))
-
-
-for country in df.index:
-    for element_type, mapper in mappers.items():
-        for tech_key, tech in mapper.items():
+for country in config['regions']:
+    for tech in techmap:
             element_name = tech + '-' + country
 
-            if element_name in element_dfs[element_type].index:
-                raise ValueError(('Element with name {}' +
-                                  ' already exists!').format(element_name))
-
-
-
-            if element_type == 'run_of_river':
-                sequence_name = element_name + '_profile'
-
-                elements[element_type][element_name] = {
+            if tech == 'ror':
+                elements[element_name] = {
                     'type': 'volatile',
                     'bus': country + '-electricity',
-                    'profile': country + '-ror-profile',
+                    'profile': 0.65,
                     'tech': tech,
-                    'carrier': 'water',
-                    'capacity': round(df.at[country, tech_key], 4)}
+                    'carrier': 'hydro',
+                    'capacity': round(df.at[country, tech], 4)}
 
-            elif element_type == 'pumped_storage':
-                if df.at[country, tech_key] > 0:
-                    elements[element_type][element_name] = {
+            elif tech == 'phs':
+                if df.at[country, tech] > 0:
+                    elements[element_name] = {
                         'type': 'storage',
                         'tech': tech,
-                        'carrier': 'water',
+                        'carrier': 'hydro',
                         'bus': country + '-electricity',
-                        'marginal_cost': 0,
                         'efficiency': 0.8,
                         'loss': 0,
-                        'capacity': df.at[country, tech_key],
-                        'storage_capacity': df.at[country, 'PSP reservoir (GWh)'] * 1000}
+                        'capacity': df.at[country, tech],
+                        'storage_capacity': df.at[country, 'PSP reservoir (GWh)'] * 1000
+                    } # to MWh
 
-            elif element_type == 'reservoir':
-                elements[element_type][element_name] = {
+            elif tech == 'reservoir':
+                elements[element_name] = {
                     'type': 'dispatchable',
                     'tech': tech,
-                    'carrier': 'water',
+                    'carrier': 'hydro',
                     'bus': country + '-electricity',
-                    'capacity': df.at[country, tech_key],
-                    'marginal_cost': marginal_cost['reservoir']}
+                    'capacity': df.at[country, tech]
+                }
 
+df = pd.DataFrame.from_dict(elements, orient='index')
 
-for element_type in element_dfs:
+for element_type in techmap.values():
     path = building.write_elements(
             element_type + '.csv',
-            pd.DataFrame.from_dict(elements[element_type], orient='index'))
+            df.loc[df['type'] == element_type].dropna(how='all', axis=1))
