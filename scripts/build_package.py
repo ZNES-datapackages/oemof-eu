@@ -29,12 +29,6 @@ import electricity_generation
 print('Building existing technologies ... ')
 import hydro_generation
 
-print('Building hydro profiles ... ')
-import run_of_river_profiles
-
-print('Building hydro parameters ... ')
-import hydro_edge_parameters
-
 print('Building wind profiles ... ')
 import capacity_factors_wind
 
