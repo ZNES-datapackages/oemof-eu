@@ -100,13 +100,13 @@ rsv['type'], rsv['tech'], rsv['bus'], rsv['loss'], rsv['capacity'], rsv['storage
 rsv = rsv.assign(**technologies['reservoir'])[rsv['capacity'] > 0].dropna()
 rsv['profile'] = rsv['tech'] + '-' + rsv['bus'] + '-profile'
 
-rsv_sequences = inflows[rsv.index] * (1 - ror_shares[rsv.index]) / rsv['capacity']
+rsv_sequences = inflows[rsv.index] * (1 - ror_shares[rsv.index])
 rsv_sequences.columns = rsv_sequences.columns.map(rsv['profile'])
 
 sequences = pd.concat([rsv_sequences, ror_sequences], axis=1).set_index(building.timeindex())
 building.write_sequences('hydro_profiles.csv', sequences)
 
-filenames = ['runofriver.csv', 'pumpedhydro.csv', 'reservoir.csv']
+filenames = ['ror.csv', 'phs.csv', 'reservoir.csv']
 
 for fn, df in zip(filenames, [ror, phs, rsv]):
     df.index = df.index.astype(str) + '_' + df['tech']
