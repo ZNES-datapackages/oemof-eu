@@ -90,7 +90,7 @@ phs = phs.assign(**technologies['phs'])
 # other hydro / reservoir
 rsv = pd.DataFrame(index=countries)
 rsv['type'], rsv['tech'], rsv['bus'], rsv['loss'], rsv['capacity'], rsv['storage_capacity'] = \
-    'storage', \
+    'reservoir', \
     'reservoir', \
     rsv.index.astype(str) + '-electricity', \
     0, \
@@ -105,8 +105,12 @@ rsv['profile'] = rsv['tech'] + '-' + rsv['bus'] + '-profile'
 rsv_sequences = inflows[rsv.index] * (1 - ror_shares[rsv.index])
 rsv_sequences.columns = rsv_sequences.columns.map(rsv['profile'])
 
-sequences = pd.concat([rsv_sequences, ror_sequences], axis=1).set_index(building.timeindex())
-building.write_sequences('hydro_profiles.csv', sequences)
+# write sequences to different files for better automatic foreignKey handling
+# in meta data
+building.write_sequences(
+    'reservoir_profile.csv', rsv_sequences.set_index(building.timeindex()))
+building.write_sequences(
+    'ror_profile.csv', ror_sequences.set_index(building.timeindex()))
 
 filenames = ['ror.csv', 'phs.csv', 'reservoir.csv']
 
