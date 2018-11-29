@@ -72,7 +72,7 @@ ror['type'], ror['tech'], ror['bus'], ror['capacity'] = \
 ror = ror.assign(**technologies['ror'])[ror['capacity'] > 0].dropna()
 ror['profile'] = ror['tech'] + '-' + ror['bus'] + '-profile'
 
-ror_sequences = inflows[ror.index] * ror_shares[ror.index] / ror['capacity']
+ror_sequences = (inflows[ror.index] * ror_shares[ror.index] * 1000) / ror['capacity']
 ror_sequences.columns = ror_sequences.columns.map(ror['profile'])
 
 # phs
@@ -85,7 +85,7 @@ phs['type'], phs['tech'], phs['bus'], phs['loss'], phs['capacity'] = \
     capacities.loc[phs.index, ' installed pumped hydro capacities [GW]'] * 1000
 
 phs['storage_capacity'] = phs['capacity'] * 6  # Brown et al.
-phs = phs.assign(**technologies['phs'])
+phs = phs.assign(**technologies['phs'])[phs['capacity'] > 0].dropna()
 
 # other hydro / reservoir
 rsv = pd.DataFrame(index=countries)
@@ -100,7 +100,7 @@ rsv['type'], rsv['tech'], rsv['bus'], rsv['loss'], rsv['capacity'], rsv['storage
 rsv = rsv.assign(**technologies['reservoir'])[rsv['capacity'] > 0].dropna()
 rsv['profile'] = rsv['tech'] + '-' + rsv['bus'] + '-profile'
 
-rsv_sequences = inflows[rsv.index] * (1 - ror_shares[rsv.index])
+rsv_sequences = inflows[rsv.index] * (1 - ror_shares[rsv.index]) * 1000 # GWh -> MWh
 rsv_sequences.columns = rsv_sequences.columns.map(rsv['profile'])
 
 # write sequences to different files for better automatic foreignKey handling
