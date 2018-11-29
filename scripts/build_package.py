@@ -53,7 +53,8 @@ building.infer_metadata(package_name='angus_base_scenario',
                             'bus': ['volatile', 'dispatchable', 'storage',
                                     'heat_storage', 'load', 'ror', 'reservoir',
                                     'phs', 'excess', 'boiler'],
-                            'profile': ['load', 'volatile', 'heat_load'],
+                            'profile': ['load', 'volatile', 'heat_load', 'ror',
+                                        'reservoir'],
                             'from_to_bus': ['connection', 'conversion', 'line'],
                             'chp': ['backpressure', 'extraction']
                             }
