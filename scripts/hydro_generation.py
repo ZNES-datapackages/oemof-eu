@@ -94,7 +94,9 @@ rsv['type'], rsv['tech'], rsv['bus'], rsv['loss'], rsv['capacity'], rsv['storage
     'reservoir', \
     rsv.index.astype(str) + '-electricity', \
     0, \
-    (1 - ror_shares[rsv.index]) * capacities.loc[rsv.index, ' installed hydro capacities [GW]'] * 1000, \
+    (capacities.loc[rsv.index, ' installed hydro capacities [GW]'] -
+    ror_shares[rsv.index] * capacities.loc[rsv.index, ' installed hydro capacities [GW]'] -
+    capacities.loc[rsv.index, ' installed pumped hydro capacities [GW]']) * 1000, \
     capacities.loc[rsv.index, ' reservoir capacity [TWh]'] * 1e6  # to MWh
 
 rsv = rsv.assign(**technologies['reservoir'])[rsv['capacity'] > 0].dropna()
