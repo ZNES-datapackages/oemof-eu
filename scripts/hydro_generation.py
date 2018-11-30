@@ -57,9 +57,8 @@ technologies = pd.DataFrame(Package('https://raw.githubusercontent.com/ZNES-data
 technologies = technologies.groupby(['year', 'tech', 'carrier']).apply(lambda x: dict(zip(x.parameter, x.value))).reset_index('carrier').apply(lambda x: dict({'carrier': x.carrier}, **x[0]), axis=1)
 technologies = technologies.loc[year].to_dict()
 
-ror_shares = pd.read_csv(building.download_data(
-    'https://zenodo.org/record/804244/files/Run-Of-River%20Shares.csv?download=1'),
-    index_col=['ctrcode'])['run-of-river share']
+ror_shares = pd.read_csv(os.path.join(config['directories']['archive'], 'ror_ENTSOe_Restore2050.csv'),
+                        index_col='Country Code (ISO 3166-1)')['ror ENTSO-E\n+ Restore']
 
 # ror
 ror = pd.DataFrame(index=countries)
@@ -67,7 +66,8 @@ ror['type'], ror['tech'], ror['bus'], ror['capacity'] = \
     'volatile', \
     'ror', \
     ror.index.astype(str) + '-electricity', \
-    ror_shares[ror.index] * capacities.loc[ror.index, ' installed hydro capacities [GW]'] * 1000
+    (capacities.loc[ror.index, ' installed hydro capacities [GW]'] -
+    capacities.loc[ror.index, ' installed pumped hydro capacities [GW]']) * ror_shares[ror.index] * 1000
 
 ror = ror.assign(**technologies['ror'])[ror['capacity'] > 0].dropna()
 ror['profile'] = ror['tech'] + '-' + ror['bus'] + '-profile'
@@ -94,9 +94,8 @@ rsv['type'], rsv['tech'], rsv['bus'], rsv['loss'], rsv['capacity'], rsv['storage
     'reservoir', \
     rsv.index.astype(str) + '-electricity', \
     0, \
-    (capacities.loc[rsv.index, ' installed hydro capacities [GW]'] -
-    ror_shares[rsv.index] * capacities.loc[rsv.index, ' installed hydro capacities [GW]'] -
-    capacities.loc[rsv.index, ' installed pumped hydro capacities [GW]']) * 1000, \
+    (capacities.loc[ror.index, ' installed hydro capacities [GW]'] -
+    capacities.loc[ror.index, ' installed pumped hydro capacities [GW]']) * (1 - ror_shares[ror.index]) * 1000, \
     capacities.loc[rsv.index, ' reservoir capacity [TWh]'] * 1e6  # to MWh
 
 rsv = rsv.assign(**technologies['reservoir'])[rsv['capacity'] > 0].dropna()
