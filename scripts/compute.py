@@ -47,8 +47,9 @@ if  temporal_resolution > 1:
 else:
     path = ''
     processing.copy_datapackage(
-        os.path.join(path, 'datapackage.json'),
-        os.path.join(results_path, 'original_input'), subset=None)
+        'datapackage.json',
+        os.path.join(results_path, 'original_input'),
+        subset='data')
 
 cli.stopwatch()
 
