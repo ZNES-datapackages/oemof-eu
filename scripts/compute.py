@@ -2,20 +2,21 @@
 from datapackage import Package
 import datetime
 
+import os
 import pandas as pd
 import numpy as np
 import logging
-
+import json
 # import oemof base classes to create energy system objects
 import logging
 
 from oemof.solph import EnergySystem, Model, Bus, Sink, constraints
 from oemof.tools import logger
 
-from oemof.outputlib import processing, views
+import oemof.outputlib as outlib
 from renpass import options, cli
 from renpass import postprocessing as pp
-from datapackage_utilities import aggregation, building
+from datapackage_utilities import aggregation, building, processing
 
 
 
@@ -67,8 +68,18 @@ results = m.results()
 ################################################################################
 # postprocessing write results
 ################################################################################
-writer = pd.ExcelWriter(
-            datetime.datetime.now().strftime("%Y%m%d_%H:%M") + '_results.xlsx')
+results_path = os.path.join('results', config['name'])
+if not os.path.exists(results_path):
+    os.makedirs(results_path)
+
+with open(os.path.join(results_path, 'config.json'), 'w') as outfile:
+    json.dump(config, outfile, indent=4)
+
+processing.copy_datapackage(
+    os.path.join(path, 'datapackage.json'),
+    os.path.join(results_path, 'input'), subset=None)
+
+writer = pd.ExcelWriter(os.path.join(results_path, 'results.xlsx'))
 
 buses = building.read_elements('bus.csv')
 
@@ -132,7 +143,7 @@ pp.component_results(
 
 
 
-meta_results = processing.meta_results(m)
+meta_results = outlib.processing.meta_results(m)
 pd.DataFrame({
     'time': time,
     'objective': {
@@ -146,13 +157,14 @@ pd.DataFrame({
             .to_excel(writer, 'meta_results')
 
 
-pd.concat([views.node(results, b, multiindex=True).get('scalars')
+pd.concat([outlib.views.node(results, b, multiindex=True).get('scalars')
           for b in buses.index]).to_excel(writer, 'oemof-scalars-endogenous')
 
 for b in buses.index:
-    views.node(results, b, multiindex=True)['sequences'].to_excel(
+    outlib.views.node(results, b, multiindex=True)['sequences'].to_excel(
                                                         writer, b + 'oemof-seq')
 
 writer.save()
+
 
 time['postprocessing'] = cli.stopwatch()
