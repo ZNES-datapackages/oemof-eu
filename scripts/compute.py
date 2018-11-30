@@ -29,19 +29,31 @@ time = {}
 
 from oemof.network import Bus
 
+# create results path
+results_path = os.path.join('results', config['name'])
+if not os.path.exists(results_path):
+    os.makedirs(results_path)
+
+# store used config file
+with open(os.path.join(results_path, 'config.json'), 'w') as outfile:
+    json.dump(config, outfile, indent=4)
+
+# copy package either aggregated or the original one (only data!)
 if  temporal_resolution > 1:
     logging.info("Aggregating for temporal aggregation ... ")
     path = aggregation.temporal_skip('datapackage.json',
                                      temporal_resolution,
-                                     path='/tmp') + '/'
+                                     path=results_path) + '/'
 else:
     path = ''
+    processing.copy_datapackage(
+        os.path.join(path, 'datapackage.json'),
+        os.path.join(results_path, 'original_input'), subset=None)
 
 cli.stopwatch()
 
 system = Bus('system')
 setattr(system, 'emission_limit', emission_limit)
-
 
 es = EnergySystem.from_datapackage(
     path + 'datapackage.json',
@@ -52,7 +64,7 @@ time['energysystem'] = cli.stopwatch()
 
 m = Model(es)
 
-m.write(io_options={'symbolic_solver_labels': True})
+# m.write(io_options={'symbolic_solver_labels': True})
 
 constraints.emission_limit(m, limit=system.emission_limit)
 
@@ -68,16 +80,9 @@ results = m.results()
 ################################################################################
 # postprocessing write results
 ################################################################################
-results_path = os.path.join('results', config['name'])
-if not os.path.exists(results_path):
-    os.makedirs(results_path)
 
-with open(os.path.join(results_path, 'config.json'), 'w') as outfile:
-    json.dump(config, outfile, indent=4)
 
-processing.copy_datapackage(
-    os.path.join(path, 'datapackage.json'),
-    os.path.join(results_path, 'input'), subset=None)
+
 
 writer = pd.ExcelWriter(os.path.join(results_path, 'results.xlsx'))
 
