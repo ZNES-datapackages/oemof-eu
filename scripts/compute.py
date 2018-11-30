@@ -48,7 +48,7 @@ else:
     path = ''
     processing.copy_datapackage(
         'datapackage.json',
-        os.path.join(results_path, 'original_input'),
+        os.path.abspath(os.path.join(results_path, 'original_input')),
         subset='data')
 
 cli.stopwatch()
