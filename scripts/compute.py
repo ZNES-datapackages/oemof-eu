@@ -9,7 +9,7 @@ import logging
 # import oemof base classes to create energy system objects
 import logging
 
-from oemof.solph import EnergySystem, Model, constraints
+from oemof.solph import EnergySystem, Model, Bus, Sink, constraints
 from oemof.tools import logger
 
 from oemof.outputlib import processing, views
@@ -51,6 +51,8 @@ time['energysystem'] = cli.stopwatch()
 
 m = Model(es)
 
+m.write(io_options={'symbolic_solver_labels': True})
+
 constraints.emission_limit(m, limit=system.emission_limit)
 
 m.receive_duals()
@@ -62,30 +64,27 @@ time['solve'] = cli.stopwatch()
 
 results = m.results()
 
-
 ################################################################################
 # postprocessing write results
 ################################################################################
-buses = building.read_elements('bus.csv')
-##############
-############### CAUTION CLEAR THIS
-connection_results = pp.component_results(es, results).get('connection')
-
-
-
 writer = pd.ExcelWriter(
             datetime.datetime.now().strftime("%Y%m%d_%H:%M") + '_results.xlsx')
+
+buses = building.read_elements('bus.csv')
+
+connection_results = pp.component_results(es, results).get('connection')
 
 for b in buses.index:
     supply = pp.supply_results(results=results, es=es,
                                bus=[b],
                                types=['dispatchable', 'volatile', 'storage',
-                                      'conversion', 'backpressure',
+                                      'conversion', 'backpressure', 'reservoir',
                                       'extraction'])
 
     supply.columns = supply.columns.droplevel([1,   2])
-    #
-    if connection_results is not None and es.groups[b] in list(connection_results.columns.levels[0]):
+
+    if connection_results is not None and \
+        es.groups[b] in list(connection_results.columns.levels[0]):
         ex = connection_results.loc[:, (es.groups[b], slice(None), 'flow')].sum(axis=1)
         im = connection_results.loc[:, (slice(None), es.groups[b], 'flow')].sum(axis=1)
 
@@ -94,20 +93,9 @@ for b in buses.index:
     supply.to_excel(writer, b)
 
 
-
-
-
-# import matplotlib.pyplot as plt
-# fig = plt.Figure(figsize=(20, 10))
-# ax = supply.reset_index(drop=True).loc[0:48].plot(kind='bar', stacked=True)
-# ax.legend(loc='upper center', bbox_to_anchor=(1.45, 0.8), shadow=True, ncol=2)
-# demand.loc[:, es.groups['DE_load']].reset_index(drop=True).loc[0:48].plot()
-# plt.savefig('plot.pdf')
-
-
 demand = pp.demand_results(results=results, es=es, bus=buses.index)
 demand.columns = demand.columns.droplevel([0, 2])
-demand.to_excel(writer, 'demand')
+demand.to_excel(writer, 'load')
 
 all = pp.bus_results(es,
                      results,
@@ -119,20 +107,18 @@ endogenous = all.reset_index()
 endogenous['tech'] = [
     getattr(t, 'tech', np.nan) for t in all.index.get_level_values(0)]
 
-inputs = processing.param_results(es)
+
 d = dict()
-for node, attr in inputs.items():
-    if attr['scalars'].get('capacity') is not None:
-        key = (node[0],
-               [n for n in node[0].outputs.keys()][0], 'capacity',
-               node[0].tech)
-        d[key] = {'value': attr['scalars']['capacity']}
+for node in es.nodes:
+    if not isinstance(node, (Bus, Sink)):
+        if getattr(node, 'tech', config['investment_technologies'][0]) not in config['investment_technologies']:
+            key = (node, [n for n in node.outputs.keys()][0], 'capacity', node.tech)
+            d[key] = {'value': node.capacity}
 exogenous = pd.DataFrame.from_dict(d, orient='index').dropna()
 exogenous.index = exogenous.index.set_names(['from', 'to', 'type', 'tech'])
 
 capacities = pd.concat([endogenous, exogenous.reset_index()]).groupby(['to', 'tech']).sum().unstack('to')
 capacities.columns = capacities.columns.droplevel(0)
-
 capacities.to_excel(writer, 'installed_capacities')
 
 
@@ -140,34 +126,11 @@ duals = pp.bus_results(es, results, aggregate=True).xs('duals', level=2, axis=1)
 duals.columns = duals.columns.droplevel(1)
 (duals.T / m.objective_weighting).T.to_excel(writer, 'shadow_prices')
 
-#(duals.T / m.objective_weighting).T.mean()
-# def transform_index(df):
-#     """
-#     """
-#     new_df = df.reset_index()
-#     new_df['tech'] = [
-#         getattr(t, 'tech', np.nan) for t in df.index.get_level_values(0)]
-#     new_df.set_index(['from', 'to', 'type', 'tech'], inplace=True)
-#
-#     return new_df
-#
-# transform_index(df=supply.T).groupby('tech').sum().T
-
-#
 pp.component_results(
      es, results, select='sequences')['excess'].to_excel(writer,
                                                          'excess_electricity')
 
-input_scalars = pd.concat([
-    views.node(
-        processing.parameter_as_dict(es),
-        es.groups[b],
-        multiindex=True)['scalars']
-    for b in buses.index])
 
-input_scalars.unstack('type').to_excel(writer, 'input_scalars')
-
-time['postprocessing'] = cli.stopwatch()
 
 meta_results = processing.meta_results(m)
 pd.DataFrame({
@@ -184,8 +147,12 @@ pd.DataFrame({
 
 
 pd.concat([views.node(results, b, multiindex=True).get('scalars')
-          for b in buses.index]).to_excel(writer, 'scalar_view')
+          for b in buses.index]).to_excel(writer, 'oemof-scalars-endogenous')
+
 for b in buses.index:
-    views.node(results, b, multiindex=True)['sequences'].to_excel(writer, b+'-seq')
+    views.node(results, b, multiindex=True)['sequences'].to_excel(
+                                                        writer, b + 'oemof-seq')
 
 writer.save()
+
+time['postprocessing'] = cli.stopwatch()
