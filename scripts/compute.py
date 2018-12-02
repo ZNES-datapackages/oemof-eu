@@ -160,7 +160,7 @@ pd.DataFrame({
         m.name: meta_results['problem']['Number of constraints']},
     'variables': {
         m.name: meta_results['problem']['Number of variables']}})\
-            .to_excel(writer, 'meta_results')
+            .to_excel(writer, 'modestats')
 
 
 pd.concat([outlib.views.node(results, b, multiindex=True).get('scalars')

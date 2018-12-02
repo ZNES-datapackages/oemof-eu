@@ -46,6 +46,7 @@
       "pv",
       "ocgt",
       "ccgt",
+      "acaes",
       "battery",
       "coal"],
   "sources": [
