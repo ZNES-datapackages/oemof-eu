@@ -14,7 +14,7 @@ techmap = {'ocgt': 'dispatchable',
            'wind_offshore': 'volatile',
            'biomass': 'dispatchable',
            'battery': 'storage',
-           'caes': 'storage'}
+           'acaes': 'storage'}
 
 config = building.get_config()
 wacc = config['wacc']
@@ -27,6 +27,9 @@ technologies = technologies.loc[config['year']].to_dict()
 potential = Package('https://raw.githubusercontent.com/ZNES-datapackages/technology-potential/master/datapackage.json').get_resource('renewable').read(keyed=True)
 potential = pd.DataFrame(potential).set_index(['country', 'tech'])
 potential = potential.loc[potential['source'] == 'Brown & Schlachtberger'].to_dict()
+
+storage_potential = Package('https://raw.githubusercontent.com/ZNES-datapackages/technology-potential/master/datapackage.json').get_resource('storage').read(keyed=True)
+storage_potential = pd.DataFrame(storage_potential).set_index(['country', 'tech']).to_dict()
 
 carrier = pd.read_csv('archive/carrier.csv', index_col=[0,1]).loc[('base', config['year'])]
 carrier.set_index('carrier', inplace=True)
@@ -89,12 +92,14 @@ for r in config['regions']:
                     'bus': r + '-electricity',
                     'tech': tech,
                     'type': 'storage',
-''                  'capacity_potential': potential['capacity_potential'].get((r, tech), "Infinity"),
+''                  'capacity_potential': storage_potential['capacity_potential'].get((r, tech), "Infinity"),
                     'capacity_ratio': data['capacity_ratio']
                 })
 
 
 df = pd.DataFrame.from_dict(elements, orient='index')
+# drop storage capacity cost to avoid duplicat investment
+df = df.drop('storage_capacity_cost', axis=1)
 
 df = df[(df[['capacity_potential']] != 0).all(axis=1)]
 
