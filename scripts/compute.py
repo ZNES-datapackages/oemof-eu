@@ -11,6 +11,7 @@ import json
 import logging
 
 from oemof.solph import EnergySystem, Model, Bus, Sink, constraints
+from oemof.solph.components import GenericStorage
 from oemof.tools import logger
 
 import oemof.outputlib as outlib
@@ -169,6 +170,9 @@ pd.concat([outlib.views.node(results, b, multiindex=True).get('scalars')
 for b in buses.index:
     outlib.views.node(results, b, multiindex=True)['sequences'].to_excel(
                                                         writer, b + 'oemof-seq')
+
+outlib.views.node_weight_by_type(results, GenericStorage).to_excel(
+    writer, 'storage_filling_levels')
 
 writer.save()
 
