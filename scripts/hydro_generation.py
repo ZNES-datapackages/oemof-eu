@@ -85,7 +85,10 @@ phs['type'], phs['tech'], phs['bus'], phs['loss'], phs['capacity'] = \
     capacities.loc[phs.index, ' installed pumped hydro capacities [GW]'] * 1000
 
 phs['storage_capacity'] = phs['capacity'] * 6  # Brown et al.
+# as efficieny in data is roundtrip use sqrt of roundtrip
+phs['efficiency'] = float(technologies['phs']['efficiency'])**0.5 
 phs = phs.assign(**technologies['phs'])[phs['capacity'] > 0].dropna()
+
 
 # other hydro / reservoir
 rsv = pd.DataFrame(index=countries)

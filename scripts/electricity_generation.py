@@ -13,7 +13,8 @@ techmap = {'ocgt': 'dispatchable',
            'wind_onshore': 'volatile',
            'wind_offshore': 'volatile',
            'biomass': 'dispatchable',
-           'battery': 'storage'}
+           'battery': 'storage',
+           'caes': 'storage'}
 
 config = building.get_config()
 wacc = config['wacc']
@@ -66,6 +67,8 @@ for r in config['regions']:
                     profile = 'wind-' + r + '-profile'
                 elif 'pv' in tech:
                     profile = 'pv-' + r + '-profile'
+                    data['capacity_cost'] = 800
+
                 element.update({
                     'capacity_cost': annuity(
                         float(data['capacity_cost']),
