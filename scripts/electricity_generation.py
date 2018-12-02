@@ -92,6 +92,7 @@ for r in config['regions']:
                     'bus': r + '-electricity',
                     'tech': tech,
                     'type': 'storage',
+                    'marginal_cost': 0.001,
 ''                  'capacity_potential': storage_potential['capacity_potential'].get((r, tech), "Infinity"),
                     'capacity_ratio': data['capacity_ratio']
                 })
