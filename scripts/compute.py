@@ -105,8 +105,8 @@ for b in buses.index:
 
     supply.to_excel(writer, 'supply_' + b)
 
-endogenous = pp.bus_results(es, results, select='scalars', aggregate=True)
-endogenous.name = 'value'
+all = pp.bus_results(es, results, select='scalars', aggregate=True)
+all.name = 'value'
 endogenous = all.reset_index()
 endogenous['tech'] = [
     getattr(t, 'tech', np.nan) for t in all.index.get_level_values(0)]
