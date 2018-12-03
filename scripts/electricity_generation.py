@@ -5,7 +5,6 @@ from oemof.tools.economics import annuity
 
 from datapackage_utilities import building
 
-
 techmap = {'ocgt': 'dispatchable',
            'ccgt': 'dispatchable',
            'stsc': 'dispatchable',
@@ -13,7 +12,7 @@ techmap = {'ocgt': 'dispatchable',
            'wind_onshore': 'volatile',
            'wind_offshore': 'volatile',
            'biomass': 'dispatchable',
-           'battery': 'storage',
+           'lithium_battery': 'storage',
            'acaes': 'storage'}
 
 config = building.get_config()
@@ -92,6 +91,7 @@ for r in config['regions']:
                     'bus': r + '-electricity',
                     'tech': tech,
                     'type': 'storage',
+                    'efficiency': data['efficiency']**0.5 # convert roundtrip to input / output efficiency
                     'marginal_cost': 0.001,
 ''                  'capacity_potential': storage_potential['capacity_potential'].get((r, tech), "Infinity"),
                     'capacity_ratio': data['capacity_ratio']
