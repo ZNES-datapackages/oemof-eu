@@ -20,7 +20,6 @@ from renpass import postprocessing as pp
 from datapackage_utilities import aggregation, building, processing
 
 
-
 config = building.get_config()
 
 temporal_resolution = config['temporal_resolution']
@@ -82,10 +81,6 @@ results = m.results()
 ################################################################################
 # postprocessing write results
 ################################################################################
-
-
-
-
 writer = pd.ExcelWriter(os.path.join(results_path, 'results.xlsx'))
 
 buses = building.read_elements('bus.csv')
@@ -108,73 +103,55 @@ for b in buses.index:
 
         supply['net_import'] =  im-ex
 
-    supply.to_excel(writer, b)
+    supply.to_excel(writer, 'supply_' + b)
 
-
-demand = pp.demand_results(results=results, es=es, bus=buses.index)
-demand.columns = demand.columns.droplevel([0, 2])
-demand.to_excel(writer, 'load')
-
-all = pp.bus_results(es,
-                     results,
-                     select='scalars',
-                     aggregate=True)
-
-all.name = 'value'
+endogenous = pp.bus_results(es, results, select='scalars', aggregate=True)
+endogenous.name = 'value'
 endogenous = all.reset_index()
 endogenous['tech'] = [
     getattr(t, 'tech', np.nan) for t in all.index.get_level_values(0)]
 
-
 d = dict()
 for node in es.nodes:
     if not isinstance(node, (Bus, Sink)):
-        if getattr(node, 'tech', config['investment_technologies'][0]) not in config['investment_technologies']:
+        if getattr(node, 'tech', config['investment_technologies'][0]) \
+            not in config['investment_technologies']:
             key = (node, [n for n in node.outputs.keys()][0], 'capacity', node.tech)
             d[key] = {'value': node.capacity}
 exogenous = pd.DataFrame.from_dict(d, orient='index').dropna()
 exogenous.index = exogenous.index.set_names(['from', 'to', 'type', 'tech'])
 
-capacities = pd.concat([endogenous, exogenous.reset_index()]).groupby(['to', 'tech']).sum().unstack('to')
+capacities = pd.concat(
+    [endogenous, exogenous.reset_index()]).groupby(['to', 'tech']).sum().unstack('to')
 capacities.columns = capacities.columns.droplevel(0)
-capacities.to_excel(writer, 'installed_capacities')
+capacities.to_excel(writer, 'capacities')
 
+demand = pp.demand_results(results=results, es=es, bus=buses.index)
+demand.columns = demand.columns.droplevel([0, 2])
+demand.to_excel(writer, 'load')
 
 duals = pp.bus_results(es, results, aggregate=True).xs('duals', level=2, axis=1)
 duals.columns = duals.columns.droplevel(1)
 (duals.T / m.objective_weighting).T.to_excel(writer, 'shadow_prices')
 
-pp.component_results(
-     es, results, select='sequences')['excess'].to_excel(writer,
-                                                         'excess_electricity')
+excess = pp.component_results(es, results, select='sequences')['excess']
+excess.columns = excess.columns.droplevel([1,2])
+excess.to_excel(writer, 'excess')
 
-
-
-meta_results = outlib.processing.meta_results(m)
-pd.DataFrame({
-    'time': time,
-    'objective': {
-        m.name: meta_results['objective']},
-    'solver_time': {
-        m.name: meta_results['solver']['Time']},
-    'constraints': {
-        m.name: meta_results['problem']['Number of constraints']},
-    'variables': {
-        m.name: meta_results['problem']['Number of variables']}})\
-            .to_excel(writer, 'modestats')
-
-
-pd.concat([outlib.views.node(results, b, multiindex=True).get('scalars')
-          for b in buses.index]).to_excel(writer, 'oemof-scalars-endogenous')
-
-for b in buses.index:
-    outlib.views.node(results, b, multiindex=True)['sequences'].to_excel(
-                                                        writer, b + 'oemof-seq')
-
-outlib.views.node_weight_by_type(results, GenericStorage).to_excel(
-    writer, 'storage_filling_levels')
+filling_levels = outlib.views.node_weight_by_type(results, GenericStorage)
+filling_levels.columns = filling_levels.columns.droplevel(1)
+filling_levels.to_excel(writer, 'filling_levels')
 
 writer.save()
 
-
 time['postprocessing'] = cli.stopwatch()
+
+modelstats = outlib.processing.meta_results(m)
+modelstats.pop('solver')
+modelstats['problem'].pop('Sense')
+modelstats.update({'logged_time': time})
+with open(os.path.join(results_path, 'modelstats.json'), 'w') as outfile:
+    json.dump(modelstats, outfile, indent=4)
+
+
+# connection_results.to_excel(oemof_writer, 'transshipment')

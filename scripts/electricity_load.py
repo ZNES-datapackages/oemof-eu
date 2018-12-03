@@ -46,8 +46,8 @@ elements = df.loc[config['regions'], df.loc['Scenario'] == '100% RES']
 elements = elements.rename(columns = {'Unnamed: 3':'amount'})
 elements.index.name = 'bus'
 elements.reset_index(inplace=True)
-elements['name'] = elements.apply(lambda row: row.bus + '_load', axis=1)
-elements['profile'] = elements.apply(lambda row: row.bus + '_profile', axis=1)
+elements['name'] = elements.apply(lambda row: row.bus + '-electricty-load', axis=1)
+elements['profile'] = elements.apply(lambda row: row.bus + '-electricity-load-profile', axis=1)
 elements['type'] = 'load'
 elements['carrier'] = 'electricity'
 elements.set_index('name', inplace=True)

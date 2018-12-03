@@ -70,7 +70,7 @@ ror['type'], ror['tech'], ror['bus'], ror['capacity'] = \
     capacities.loc[ror.index, ' installed pumped hydro capacities [GW]']) * ror_shares[ror.index] * 1000
 
 ror = ror.assign(**technologies['ror'])[ror['capacity'] > 0].dropna()
-ror['profile'] = ror['tech'] + '-' + ror['bus'] + '-profile'
+ror['profile'] = ror['bus'] + '-' + ror['tech'] +  '-profile'
 
 ror_sequences = (inflows[ror.index] * ror_shares[ror.index] * 1000) / ror['capacity']
 ror_sequences.columns = ror_sequences.columns.map(ror['profile'])
@@ -86,7 +86,7 @@ phs['type'], phs['tech'], phs['bus'], phs['loss'], phs['capacity'] = \
 
 phs['storage_capacity'] = phs['capacity'] * 6  # Brown et al.
 # as efficieny in data is roundtrip use sqrt of roundtrip
-phs['efficiency'] = float(technologies['phs']['efficiency'])**0.5 
+phs['efficiency'] = float(technologies['phs']['efficiency'])**0.5
 phs = phs.assign(**technologies['phs'])[phs['capacity'] > 0].dropna()
 
 
@@ -102,7 +102,7 @@ rsv['type'], rsv['tech'], rsv['bus'], rsv['loss'], rsv['capacity'], rsv['storage
     capacities.loc[rsv.index, ' reservoir capacity [TWh]'] * 1e6  # to MWh
 
 rsv = rsv.assign(**technologies['reservoir'])[rsv['capacity'] > 0].dropna()
-rsv['profile'] = rsv['tech'] + '-' + rsv['bus'] + '-profile'
+rsv['profile'] = rsv['bus'] + '-' + rsv['tech'] + '-profile'
 
 rsv_sequences = inflows[rsv.index] * (1 - ror_shares[rsv.index]) * 1000 # GWh -> MWh
 rsv_sequences.columns = rsv_sequences.columns.map(rsv['profile'])
@@ -117,7 +117,7 @@ building.write_sequences(
 filenames = ['ror.csv', 'phs.csv', 'reservoir.csv']
 
 for fn, df in zip(filenames, [ror, phs, rsv]):
-    df.index = df.index.astype(str) + '_' + df['tech']
+    df.index = df.index.astype(str) + '-' + df['tech']
     df['capacity_cost'] = df.apply(
         lambda x: annuity(float(x['capacity_cost']) * 1000,
                       float(x['lifetime']),

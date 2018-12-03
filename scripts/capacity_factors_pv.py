@@ -23,7 +23,7 @@ df = raw_data.loc[year]
 sequences_df = pd.DataFrame(index=df.index)
 
 for c in countries:
-    sequence_name = 'pv-' + c + '-profile'
+    sequence_name =  c + '-pv-profile'
     sequences_df[sequence_name] = raw_data.loc[year][c].values
 
 sequences_df.index = building.timeindex()

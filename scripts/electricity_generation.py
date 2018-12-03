@@ -40,7 +40,7 @@ for r in config['regions']:
         if tech in config['investment_technologies']:
 
             element = data.copy()
-            elements[tech + '-' + r] = element
+            elements[r + '-' + tech] = element
 
             if techmap.get(tech) == 'dispatchable':
                 element.update({
@@ -64,12 +64,11 @@ for r in config['regions']:
 
             elif techmap.get(tech) == 'volatile':
                 if 'wind_off' in tech:
-                    profile = 'wind-off-' + r + '-profile'
+                    profile =  r + '-wind-off-profile'
                 elif 'wind_on' in tech:
-                    profile = 'wind-' + r + '-profile'
+                    profile =  r +  '-wind-on-profile'
                 elif 'pv' in tech:
-                    profile = 'pv-' + r + '-profile'
-                    data['capacity_cost'] = 800
+                    profile =  r + '-pv-profile'
 
                 element.update({
                     'capacity_cost': annuity(
@@ -91,7 +90,7 @@ for r in config['regions']:
                     'bus': r + '-electricity',
                     'tech': tech,
                     'type': 'storage',
-                    'efficiency': data['efficiency']**0.5 # convert roundtrip to input / output efficiency
+                    'efficiency': float(data['efficiency'])**0.5, # convert roundtrip to input / output efficiency
                     'marginal_cost': 0.001,
 ''                  'capacity_potential': storage_potential['capacity_potential'].get((r, tech), "Infinity"),
                     'capacity_ratio': data['capacity_ratio']

@@ -36,12 +36,12 @@ sequences_df = pd.DataFrame(index=near_term.loc[year].index)
 for c in config['regions']:
     # add offshore profile if country exists in offshore data columns
     if [col for col in offshore_data.columns if c + '_OFF' in col]:
-        sequences_df['wind-off-' + c + '-profile'] = offshore_data[c + '_OFF']
+        sequences_df[c + '-wind-off-profile'] = offshore_data[c + '_OFF']
     # hack as poland is not in ninja, therfore we take SE offshore profile
     elif c == 'PL':
-        sequences_df['wind-off-' + c + '-profile'] = offshore_data['SE_OFF']
+        sequences_df[c + '-wind-off-profile'] = offshore_data['SE_OFF']
 
-    sequence_name = 'wind-' + c + '-profile'
+    sequence_name = c + '-wind-on-profile'
 
     sequences_df[sequence_name] =  near_term.loc[year][c].values
 
