@@ -19,9 +19,11 @@ import electricity_load
 if config['grid'] == 2050:
     print('Using future grid ...')
     import future_grid
-else:
+elif config['grid'] == 'status_quo':
     print('Using existing grid ...')
     import status_quo_grid
+else:
+    print('No grid ... ')
 
 print('Building electricity generation technologies ... ')
 import electricity_generation

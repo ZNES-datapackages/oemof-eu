@@ -1,23 +1,22 @@
-#
-from datapackage import Package
-import datetime
 
+import datetime
+import json
+import logging
+import numpy as np
 import os
 import pandas as pd
-import numpy as np
-import logging
-import json
-# import oemof base classes to create energy system objects
-import logging
+
+from datapackage import Package
+
+from datapackage_utilities import aggregation, building, processing
 
 from oemof.solph import EnergySystem, Model, Bus, Sink, constraints
 from oemof.solph.components import GenericStorage
-from oemof.tools import logger
-
+from oemof.tools import logger, economics
 import oemof.outputlib as outlib
+
 from renpass import options, cli
 from renpass import postprocessing as pp
-from datapackage_utilities import aggregation, building, processing
 
 
 config = building.get_config()
@@ -65,15 +64,22 @@ time['energysystem'] = cli.stopwatch()
 
 m = Model(es)
 
-# m.write(io_options={'symbolic_solver_labels': True})
 
+# m.write(io_options={'symbolic_solver_labels': True})
 constraints.emission_limit(m, limit=system.emission_limit)
 
 m.receive_duals()
 
+
+# for i in es.nodes:
+#     if getattr(i, 'tech', None) == 'pv':
+#         setattr(i, 'capacity_cost', i.capacity_cost * 2)
+
+
 time['model'] = cli.stopwatch()
 
 m.solve('gurobi')
+
 time['solve'] = cli.stopwatch()
 
 results = m.results()
@@ -83,27 +89,21 @@ results = m.results()
 ################################################################################
 writer = pd.ExcelWriter(os.path.join(results_path, 'results.xlsx'))
 
-buses = building.read_elements('bus.csv')
+buses = [b.label for b in es.nodes if isinstance(b, Bus)]
 
 connection_results = pp.component_results(es, results).get('connection')
 
-for b in buses.index:
-    supply = pp.supply_results(results=results, es=es,
-                               bus=[b],
-                               types=['dispatchable', 'volatile', 'storage',
-                                      'conversion', 'backpressure', 'reservoir',
-                                      'extraction'])
-
+for b in buses:
+    supply = pp.supply_results(results=results, es=es, bus=[b])
     supply.columns = supply.columns.droplevel([1,   2])
 
-    if connection_results is not None and \
-        es.groups[b] in list(connection_results.columns.levels[0]):
+    if connection_results is not None and es.groups[b] in list(connection_results.columns.levels[0]):
         ex = connection_results.loc[:, (es.groups[b], slice(None), 'flow')].sum(axis=1)
         im = connection_results.loc[:, (slice(None), es.groups[b], 'flow')].sum(axis=1)
-
         supply['net_import'] =  im-ex
 
-    supply.to_excel(writer, 'supply_' + b)
+    supply.to_excel(writer, 'supply-' + b)
+
 
 all = pp.bus_results(es, results, select='scalars', aggregate=True)
 all.name = 'value'
@@ -114,9 +114,8 @@ endogenous['tech'] = [
 d = dict()
 for node in es.nodes:
     if not isinstance(node, (Bus, Sink)):
-        if getattr(node, 'tech', config['investment_technologies'][0]) \
-            not in config['investment_technologies']:
-            key = (node, [n for n in node.outputs.keys()][0], 'capacity', node.tech)
+        if getattr(node, 'capacity', None) is not None:
+            key = (node, [n for n in node.outputs.keys()][0], 'capacity', node.tech) # for oemof logic
             d[key] = {'value': node.capacity}
 exogenous = pd.DataFrame.from_dict(d, orient='index').dropna()
 exogenous.index = exogenous.index.set_names(['from', 'to', 'type', 'tech'])
@@ -126,7 +125,7 @@ capacities = pd.concat(
 capacities.columns = capacities.columns.droplevel(0)
 capacities.to_excel(writer, 'capacities')
 
-demand = pp.demand_results(results=results, es=es, bus=buses.index)
+demand = pp.demand_results(results=results, es=es, bus=buses)
 demand.columns = demand.columns.droplevel([0, 2])
 demand.to_excel(writer, 'load')
 
