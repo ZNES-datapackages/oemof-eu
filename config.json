@@ -47,7 +47,7 @@
       "ocgt",
       "ccgt",
       "acaes",
-      "battery",
+      "lithium_battery",
       "coal"],
   "sources": [
     "dispatchable",
