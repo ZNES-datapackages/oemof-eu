@@ -25,7 +25,7 @@ technologies = technologies.loc[config['year']].to_dict()
 
 potential = Package('https://raw.githubusercontent.com/ZNES-datapackages/technology-potential/master/datapackage.json').get_resource('renewable').read(keyed=True)
 potential = pd.DataFrame(potential).set_index(['country', 'tech'])
-potential = potential.loc[potential['source'] == 'Brown & Schlachtberger'].to_dict()
+potential = potential.loc[potential['source'] == config['potential']].to_dict()
 
 storage_potential = Package('https://raw.githubusercontent.com/ZNES-datapackages/technology-potential/master/datapackage.json').get_resource('storage').read(keyed=True)
 storage_potential = pd.DataFrame(storage_potential).set_index(['country', 'tech']).to_dict()

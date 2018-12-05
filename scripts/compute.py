@@ -93,9 +93,10 @@ buses = [b.label for b in es.nodes if isinstance(b, Bus)]
 
 connection_results = pp.component_results(es, results).get('connection')
 
+
 for b in buses:
     supply = pp.supply_results(results=results, es=es, bus=[b])
-    supply.columns = supply.columns.droplevel([1,   2])
+    supply.columns = supply.columns.droplevel([1, 2])
 
     if connection_results is not None and es.groups[b] in list(connection_results.columns.levels[0]):
         ex = connection_results.loc[:, (es.groups[b], slice(None), 'flow')].sum(axis=1)
@@ -153,4 +154,23 @@ with open(os.path.join(results_path, 'modelstats.json'), 'w') as outfile:
     json.dump(modelstats, outfile, indent=4)
 
 
-# connection_results.to_excel(oemof_writer, 'transshipment')
+# summary ----------------------------------------------------------------------
+if False:
+    excess_share = excess.sum() / demand.sum().values
+
+    supply_sum = pp.supply_results(results=results, es=es, bus=buses).apply(lambda x: x[x > 0].sum()).reset_index()
+    supply_sum['from'] = supply_sum.apply(lambda x: x['from'].label.split('-')[1], axis=1)
+    supply_sum.drop('type', axis=1, inplace=True)
+    supply_sum = supply_sum.set_index(['from', 'to']).unstack('from') / 1e6 * config['temporal_resolution']
+    supply_sum.columns  = supply_sum.columns.droplevel(0)
+
+    from matplotlib import colors
+
+    color_dict = {
+         name: colors.to_rgb(color) for name, color in options.techcolor.items()}
+    ax = capacities.T.plot(kind='bar',
+                 stacked=True,
+                 color=[color_dict.get(x, '#333333') for x in capacities.index])
+    ax.set_xlabel('Countries')
+    ax.set_ylabel('Capacities in GW')
+    ax.set_title('Installed capacities per country')

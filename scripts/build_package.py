@@ -17,7 +17,7 @@ print('Building electricity load and profiles ...')
 import electricity_load
 
 if config['grid'] == 2050:
-    print('Using future grid ...')
+    print('Using 2050 grid ...')
     import future_grid
 elif config['grid'] == 'status_quo':
     print('Using existing grid ...')
