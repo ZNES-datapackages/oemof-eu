@@ -158,7 +158,7 @@ for idx, row in df_2050.iterrows():
         element_name = predecessor + '-' + successor
 
         element = {
-            'type': 'connection',
+            'type': 'link',
             #'reactance': 0.246 * row['Length'] * 1.2,
             'loss': 0.05,
             'from_bus': predecessor,
@@ -170,7 +170,7 @@ for idx, row in df_2050.iterrows():
 
         elements[element_name] = element
 
-path = building.write_elements('connection.csv',
+path = building.write_elements('link.csv',
                                 pd.DataFrame.from_dict(elements, orient='index'))
 
 

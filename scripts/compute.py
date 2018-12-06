@@ -91,20 +91,27 @@ writer = pd.ExcelWriter(os.path.join(results_path, 'results.xlsx'))
 
 buses = [b.label for b in es.nodes if isinstance(b, Bus)]
 
-connection_results = pp.component_results(es, results).get('connection')
+link_results = pp.component_results(es, results).get('link')
 
+link_results.to_excel(writer, 'link-oemof')
 
+imports = pd.DataFrame()
 for b in buses:
     supply = pp.supply_results(results=results, es=es, bus=[b])
     supply.columns = supply.columns.droplevel([1, 2])
 
-    if connection_results is not None and es.groups[b] in list(connection_results.columns.levels[0]):
-        ex = connection_results.loc[:, (es.groups[b], slice(None), 'flow')].sum(axis=1)
-        im = connection_results.loc[:, (slice(None), es.groups[b], 'flow')].sum(axis=1)
-        supply['net_import'] =  im-ex
+    if link_results is not None and es.groups[b] in list(link_results.columns.levels[0]):
+        ex = link_results.loc[:, (es.groups[b], slice(None), 'flow')].sum(axis=1)
+        im = link_results.loc[:, (slice(None), es.groups[b], 'flow')].sum(axis=1)
+
+        net_import =  im-ex
+        net_import.name = es.groups[b]
+        imports = pd.concat([imports, net_import], axis=1)
+
+        supply['import'] = net_import
 
     supply.to_excel(writer, 'supply-' + b)
-
+    imports.to_excel(writer, 'imports')
 
 all = pp.bus_results(es, results, select='scalars', aggregate=True)
 all.name = 'value'
@@ -141,6 +148,7 @@ excess.to_excel(writer, 'excess')
 filling_levels = outlib.views.node_weight_by_type(results, GenericStorage)
 filling_levels.columns = filling_levels.columns.droplevel(1)
 filling_levels.to_excel(writer, 'filling_levels')
+
 
 writer.save()
 
