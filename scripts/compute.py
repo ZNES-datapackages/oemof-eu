@@ -15,7 +15,7 @@ from oemof.solph.components import GenericStorage
 from oemof.tools import logger, economics
 import oemof.outputlib as outlib
 
-from renpass import options, cli
+from renpass import options, cli, components
 from renpass import postprocessing as pp
 
 
@@ -70,12 +70,6 @@ constraints.emission_limit(m, limit=system.emission_limit)
 
 m.receive_duals()
 
-
-# for i in es.nodes:
-#     if getattr(i, 'tech', None) == 'pv':
-#         setattr(i, 'capacity_cost', i.capacity_cost * 2)
-
-
 time['model'] = cli.stopwatch()
 
 m.solve('gurobi')
@@ -91,9 +85,17 @@ writer = pd.ExcelWriter(os.path.join(results_path, 'results.xlsx'))
 
 buses = [b.label for b in es.nodes if isinstance(b, Bus)]
 
-link_results = pp.component_results(es, results).get('link')
+line_results = pp.line_results(es, results, select='sequences')
+if line_results is not None:
+    line_results.to_excel(writer, 'lines')
 
-link_results.to_excel(writer, 'link-oemof')
+line_capacities = pp.line_results(es, results, select='scalars')
+if line_capacities is not None:
+    line_capacities.T.to_excel(writer, 'line_capacities')
+
+link_results = pp.component_results(es, results).get('link')
+if link_results is not None:
+    link_results.to_excel(writer, 'link-oemof')
 
 imports = pd.DataFrame()
 for b in buses:
@@ -119,11 +121,15 @@ endogenous = all.reset_index()
 endogenous['tech'] = [
     getattr(t, 'tech', np.nan) for t in all.index.get_level_values(0)]
 
+
 d = dict()
 for node in es.nodes:
     if not isinstance(node, (Bus, Sink)):
         if getattr(node, 'capacity', None) is not None:
-            key = (node, [n for n in node.outputs.keys()][0], 'capacity', node.tech) # for oemof logic
+            if isinstance(node, (options.typemap['line'], options.typemap['link'])):
+                pass #key = (node.input, node.output, 'capacity', node.tech) # for oemof logic
+            else:
+                key = (node, [n for n in node.outputs.keys()][0], 'capacity', node.tech) # for oemof logic
             d[key] = {'value': node.capacity}
 exogenous = pd.DataFrame.from_dict(d, orient='index').dropna()
 exogenous.index = exogenous.index.set_names(['from', 'to', 'type', 'tech'])
@@ -163,22 +169,20 @@ with open(os.path.join(results_path, 'modelstats.json'), 'w') as outfile:
 
 
 # summary ----------------------------------------------------------------------
-if False:
-    excess_share = excess.sum() / demand.sum().values
+if True:
 
-    supply_sum = pp.supply_results(results=results, es=es, bus=buses).apply(lambda x: x[x > 0].sum()).reset_index()
+    supply_sum = pp.supply_results(
+        results=results, es=es, bus=buses, types=[
+            'dispatchable', 'volatile', 'conversion', 'backpressure', 'extraction',
+            'reservoir']).sum().reset_index() #.apply(lambda x: x[x > 0].sum())
     supply_sum['from'] = supply_sum.apply(lambda x: x['from'].label.split('-')[1], axis=1)
     supply_sum.drop('type', axis=1, inplace=True)
-    supply_sum = supply_sum.set_index(['from', 'to']).unstack('from') / 1e6 * config['temporal_resolution']
+    supply_sum = (supply_sum.set_index(['from', 'to']).unstack('from') /
+                  1e6 * config['temporal_resolution'])
     supply_sum.columns  = supply_sum.columns.droplevel(0)
 
-    from matplotlib import colors
+    excess_share = (excess.sum() * config['temporal_resolution'] / 1e6) / supply_sum.sum(axis=1)
+    excess_share.name = 'excess'
 
-    color_dict = {
-         name: colors.to_rgb(color) for name, color in options.techcolor.items()}
-    ax = capacities.T.plot(kind='bar',
-                 stacked=True,
-                 color=[color_dict.get(x, '#333333') for x in capacities.index])
-    ax.set_xlabel('Countries')
-    ax.set_ylabel('Capacities in GW')
-    ax.set_title('Installed capacities per country')
+    pd.concat([supply_sum, excess_share], axis=1).to_csv(
+        os.path.join(results_path, 'summary.csv'))

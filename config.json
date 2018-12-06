@@ -11,7 +11,10 @@
   "name": "50Mt_emission",
   "wacc": 0.07,
   "emission_limit": 50e6,
-  "grid": 2050,
+  "grid": {
+    "capacity": 2050,
+    "method": "transshipment"
+  },
   "temporal_resolution": 3,
   "include_heating": false,
   "year": 2050,
@@ -33,13 +36,13 @@
     "DE"
   ],
   "decentral_heat_buses": [
-     "DE-decentral-heat"
+    "DE-decentral-heat"
   ],
   "central_heat_buses":[
-      "DE-central-heat"
+    "DE-central-heat"
   ],
   "global_buses": [
-      "GL-gas"
+    "GL-gas"
   ],
   "investment_technologies": [
       "wind_onshore",

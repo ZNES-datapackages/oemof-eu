@@ -16,10 +16,10 @@ import bus
 print('Building electricity load and profiles ...')
 import electricity_load
 
-if config['grid'] == 2050:
+if config['grid']['capacity'] == 2050:
     print('Using 2050 grid ...')
     import future_grid
-elif config['grid'] == 'status_quo':
+elif config['grid']['capacity'] == 'SQ':
     print('Using existing grid ...')
     import status_quo_grid
 else:
