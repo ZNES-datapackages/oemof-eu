@@ -85,13 +85,13 @@ writer = pd.ExcelWriter(os.path.join(results_path, 'results.xlsx'))
 
 buses = [b.label for b in es.nodes if isinstance(b, Bus)]
 
-line_results = pp.line_results(es, results, select='sequences')
-if line_results is not None:
-    line_results.to_excel(writer, 'lines')
-
-line_capacities = pp.line_results(es, results, select='scalars')
-if line_capacities is not None:
-    line_capacities.T.to_excel(writer, 'line_capacities')
+# line_results = pp.line_results(es, results, select='sequences')
+# if line_results is not None:
+#     line_results.to_excel(writer, 'lines')
+#
+# line_capacities = pp.line_results(es, results, select='scalars')
+# if line_capacities is not None:
+#     line_capacities.T.to_excel(writer, 'line_capacities')
 
 link_results = pp.component_results(es, results).get('link')
 if link_results is not None:
@@ -130,7 +130,7 @@ for node in es.nodes:
                 pass #key = (node.input, node.output, 'capacity', node.tech) # for oemof logic
             else:
                 key = (node, [n for n in node.outputs.keys()][0], 'capacity', node.tech) # for oemof logic
-            d[key] = {'value': node.capacity}
+                d[key] = {'value': node.capacity}
 exogenous = pd.DataFrame.from_dict(d, orient='index').dropna()
 exogenous.index = exogenous.index.set_names(['from', 'to', 'type', 'tech'])
 
@@ -170,7 +170,6 @@ with open(os.path.join(results_path, 'modelstats.json'), 'w') as outfile:
 
 # summary ----------------------------------------------------------------------
 if True:
-
     supply_sum = pp.supply_results(
         results=results, es=es, bus=buses, types=[
             'dispatchable', 'volatile', 'conversion', 'backpressure', 'extraction',
