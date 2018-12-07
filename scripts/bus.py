@@ -5,6 +5,7 @@ polygons of these buses as values. It uses the NUTS shapefile.
 
 """
 import json
+from datapackage import Package
 import pandas as pd
 from geojson import FeatureCollection, Feature
 
@@ -28,14 +29,13 @@ building.download_data(
 nuts0 = pd.Series(geometry.nuts(filepath, nuts=0, tolerance=0.1))
 
 
-
-
 buses = pd.Series(name='geometry')
 buses.index.name= 'name'
 
 for r in config['regions']:
     buses[r + '-electricity'] = nuts0[r]
 building.write_geometries('bus.geojson', buses)
+
 
 # Add electricity buses
 hub_elements = {}
@@ -46,8 +46,38 @@ for b in buses.index:
         'geometry': b,
         'balanced': True}
 
+# Add carrier buses
+commodities = {}
+
+bio_potential = Package('https://raw.githubusercontent.com/ZNES-datapackages/technology-potential/master/datapackage.json').get_resource('carrier').read(keyed=True)
+bio_potential = pd.DataFrame(bio_potential).set_index(['country', 'carrier'])
+bio_potential = bio_potential.loc[bio_potential['source'] == 'hotmaps'].to_dict()
+
+for p in config['primary_carrier']:
+    for r in config['regions']:
+        bus_name = r + '-' + p + '-bus'
+        commodity_name = r + '-' + p + '-commodity'
+        if p == 'biomass':
+            balanced = True
+            commodities[commodity_name] = {
+                'type': 'dispatchable',
+                'carrier': p,
+                'bus': bus_name,
+                'capacity': float(bio_potential['value'].get((r, p), 0)) * 1e6, # TWh -> MWh
+                'edge_parameters': json.dumps({'summed_max': 1})}
+        else:
+            balanced=False
+
+        hub_elements[bus_name] = {
+            'type': 'bus',
+            'carrier': p,
+            'geometry': None,
+            'balanced': balanced}
+
+
+
 # Add heat buses
-if config['include_heating']:
+if config['heating']:
     for b in config.get('central_heat_buses', []):
         hub_elements[b] = {
             'type': 'bus',
@@ -62,14 +92,9 @@ if config['include_heating']:
             'geometry': None,
             'balanced': True}
 
-
-    # Add global buses
-    for b in config.get('global_buses', []):
-        hub_elements[b] = {
-            'type': 'bus',
-            'carrier': b.split('-')[1],
-            'geometry': None,
-            'balanced': False}
+path = building.write_elements(
+            'commodity.csv',
+            pd.DataFrame.from_dict(commodities, orient='index'))
 
 path = building.write_elements(
             'bus.csv',

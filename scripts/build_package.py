@@ -40,7 +40,7 @@ import capacity_factors_pv
 print('Building excess components ... ')
 import electricity_excess
 
-if config['include_heating']:
+if config['heating']:
     print("Including heat component ... ")
 
     import decentral_heat_generation
@@ -54,7 +54,7 @@ building.infer_metadata(package_name='angus_base_scenario',
                         foreign_keys={
                             'bus': ['volatile', 'dispatchable', 'storage',
                                     'heat_storage', 'load', 'ror', 'reservoir',
-                                    'phs', 'excess', 'boiler'],
+                                    'phs', 'excess', 'boiler', 'commodity'],
                             'profile': ['load', 'volatile', 'heat_load', 'ror',
                                         'reservoir'],
                             'from_to_bus': ['link', 'conversion', 'line'],

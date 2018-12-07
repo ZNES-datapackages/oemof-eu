@@ -2,4 +2,5 @@ scenario,year,carrier,cost,emission
 base,2050,gas,25,0.2
 base,2050,coal,12,0.4
 base,2050,oil,30,0.25
+base,2050,biomass,80,0
 base,2050,co2,0,

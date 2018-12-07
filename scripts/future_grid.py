@@ -174,7 +174,7 @@ if config['grid']['method'] == 'lopf':
 else:
 
     elements = {}
-    for idx, row in df_2050.iterrows():
+    for idx, row in df_2030.iterrows():
         if row['from'] in config['regions'] and \
             row['to'] in config['regions']:
             predecessor = row['from'] + '-electricity'
@@ -187,7 +187,7 @@ else:
                 'from_bus': predecessor,
                 'to_bus': successor,
                 'tech': 'transshipment',
-                'capacity': row[scenario] + df_2030.loc[idx][scenario],
+                'capacity': row[scenario] + df_2050.to_dict()[scenario].get(idx, 0),
                 'length': row['Length'] * 1.2}
 
             elements[element_name] = element

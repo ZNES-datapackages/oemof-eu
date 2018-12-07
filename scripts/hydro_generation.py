@@ -77,12 +77,13 @@ ror_sequences.columns = ror_sequences.columns.map(ror['profile'])
 
 # phs
 phs = pd.DataFrame(index=countries)
-phs['type'], phs['tech'], phs['bus'], phs['loss'], phs['capacity'] = \
+phs['type'], phs['tech'], phs['bus'], phs['loss'], phs['capacity'], phs['marginal_cost'] = \
     'storage', \
     'phs', \
     phs.index.astype(str) + '-electricity', \
     0, \
-    capacities.loc[phs.index, ' installed pumped hydro capacities [GW]'] * 1000
+    capacities.loc[phs.index, ' installed pumped hydro capacities [GW]'] * 1000, \
+    0.0000001
 
 phs['storage_capacity'] = phs['capacity'] * 6  # Brown et al.
 # as efficieny in data is roundtrip use sqrt of roundtrip

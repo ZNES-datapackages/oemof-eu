@@ -7,11 +7,10 @@ from datapackage_utilities import building
 
 techmap = {'ocgt': 'dispatchable',
            'ccgt': 'dispatchable',
-           'stsc': 'dispatchable',
            'pv': 'volatile',
            'wind_onshore': 'volatile',
            'wind_offshore': 'volatile',
-           'biomass': 'dispatchable',
+           'biomass': 'conversion',
            'lithium_battery': 'storage',
            'acaes': 'storage'}
 
@@ -22,13 +21,11 @@ technologies = pd.DataFrame(Package('https://raw.githubusercontent.com/ZNES-data
 technologies = technologies.groupby(['year', 'tech', 'carrier']).apply(lambda x: dict(zip(x.parameter, x.value))).reset_index('carrier').apply(lambda x: dict({'carrier': x.carrier}, **x[0]), axis=1)
 technologies = technologies.loc[config['year']].to_dict()
 
-
 potential = Package('https://raw.githubusercontent.com/ZNES-datapackages/technology-potential/master/datapackage.json').get_resource('renewable').read(keyed=True)
 potential = pd.DataFrame(potential).set_index(['country', 'tech'])
 potential = potential.loc[potential['source'] == config['potential']].to_dict()
 
-storage_potential = Package('https://raw.githubusercontent.com/ZNES-datapackages/technology-potential/master/datapackage.json').get_resource('storage').read(keyed=True)
-storage_potential = pd.DataFrame(storage_potential).set_index(['country', 'tech']).to_dict()
+
 
 carrier = pd.read_csv('archive/carrier.csv', index_col=[0,1]).loc[('base', config['year'])]
 carrier.set_index('carrier', inplace=True)
@@ -56,11 +53,29 @@ for r in config['regions']:
                     'tech': tech,
                     'capacity_potential': potential['capacity_potential'].get(
                                             (r, tech), "Infinity"),
-                    'edge_parameters': json.dumps({
-                        "emission_factor":  (carrier.loc[data['carrier']].emission /
-                                              float(data['efficiency']))
+                    'edge_parameters':   json.dumps({
+                        "emission_factor": (carrier.loc[data['carrier']].emission /
+                                        float(data['efficiency']))
                         })
                     })
+
+            if techmap.get(tech) == 'conversion':
+                element.update({
+                    'capacity_cost': annuity(
+                        float(data['capacity_cost']),
+                        float(data['lifetime']), wacc) * 1000, # €/kW -> €/M
+                    'to_bus': r + '-electricity',
+                    'from_bus': r + '-' + data['carrier'] + '-bus',
+                    'type': 'conversion',
+                    'marginal_cost': (
+                        carrier.loc[data['carrier']].cost +
+                        carrier.loc[data['carrier']].emission *
+                        carrier.loc['co2'].cost) / float(data['efficiency']),
+                    'tech': tech,
+                    })
+
+                    # ep = {'summed_max': float(bio_potential['value'].get(
+                    #     (r, tech), 0)) * 1e6}) # TWh to MWh
 
             elif techmap.get(tech) == 'volatile':
                 if 'wind_off' in tech:
@@ -82,17 +97,22 @@ for r in config['regions']:
                     'profile': profile})
 
             elif techmap[tech] == 'storage':
+                if tech == 'acaes' and r != 'DE':
+                    capacity_potential = 0
+                else:
+                    capacity_potential = 'Infinity'
                 element.update({
                     'capacity_cost': annuity(
                         float(data['capacity_cost']) +
-                        float(data['storage_capacity_cost']) / float(data['capacity_ratio']),
+                        float(data['storage_capacity_cost']) /
+                        float(data['capacity_ratio']),
                         float(data['lifetime']), wacc) * 1000,
                     'bus': r + '-electricity',
                     'tech': tech,
                     'type': 'storage',
                     'efficiency': float(data['efficiency'])**0.5, # convert roundtrip to input / output efficiency
-                    'marginal_cost': 0.001,
-''                  'capacity_potential': storage_potential['capacity_potential'].get((r, tech), "Infinity"),
+                    'marginal_cost': 0.0000001,
+''                  'capacity_potential': capacity_potential,
                     'capacity_ratio': data['capacity_ratio']
                 })
 

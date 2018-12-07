@@ -15,8 +15,10 @@
     "capacity": 2050,
     "method": "transshipment"
   },
-  "temporal_resolution": 3,
-  "include_heating": false,
+  "temporal_resolution": 1,
+  "heating": false,
+  "primary_carrier": [
+      "biomass"],
   "year": 2050,
   "weather_year": 2011,
   "demand_year": 2011,
@@ -52,6 +54,7 @@
       "ocgt",
       "ccgt",
       "acaes",
+      "biomass",
       "lithium_battery",
       "coal"],
   "sources": [
