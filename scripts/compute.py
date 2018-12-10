@@ -81,7 +81,13 @@ results = m.results()
 ################################################################################
 # postprocessing write results
 ################################################################################
-writer = pd.ExcelWriter(os.path.join(results_path, 'results.xlsx'))
+#writer = pd.ExcelWriter(os.path.join(results_path, 'results.xlsx'))
+
+def save(df, name, how='csv', writer=None):
+    if how == 'excel':
+        df.to_excel(writer, name)
+    if how == 'csv':
+        df.to_csv(os.path.join(results_path, name + '.csv'))
 
 buses = [b.label for b in es.nodes if isinstance(b, Bus)]
 
@@ -95,7 +101,7 @@ buses = [b.label for b in es.nodes if isinstance(b, Bus)]
 
 link_results = pp.component_results(es, results).get('link')
 if link_results is not None:
-    link_results.to_excel(writer, 'link-oemof')
+    save(link_results, 'links-oemof')
 
 imports = pd.DataFrame()
 for b in buses:
@@ -112,8 +118,9 @@ for b in buses:
 
         supply['import'] = net_import
 
-    supply.to_excel(writer, 'supply-' + b)
-    imports.to_excel(writer, 'imports')
+    save(supply, 'supply-' + b)
+    save(imports, 'imports')
+
 
 all = pp.bus_results(es, results, select='scalars', aggregate=True)
 all.name = 'value'
@@ -137,26 +144,26 @@ exogenous.index = exogenous.index.set_names(['from', 'to', 'type', 'tech'])
 capacities = pd.concat(
     [endogenous, exogenous.reset_index()]).groupby(['to', 'tech']).sum().unstack('to')
 capacities.columns = capacities.columns.droplevel(0)
-capacities.to_excel(writer, 'capacities')
+save(capacities, 'capacities')
 
 demand = pp.demand_results(results=results, es=es, bus=buses)
 demand.columns = demand.columns.droplevel([0, 2])
-demand.to_excel(writer, 'load')
+save(demand, 'load')
 
 duals = pp.bus_results(es, results, aggregate=True).xs('duals', level=2, axis=1)
 duals.columns = duals.columns.droplevel(1)
-(duals.T / m.objective_weighting).T.to_excel(writer, 'shadow_prices')
+duals = (duals.T / m.objective_weighting).T
+save(duals, 'shadow_prices')
 
 excess = pp.component_results(es, results, select='sequences')['excess']
 excess.columns = excess.columns.droplevel([1,2])
-excess.to_excel(writer, 'excess')
+save(excess, 'excess')
 
 filling_levels = outlib.views.node_weight_by_type(results, GenericStorage)
 filling_levels.columns = filling_levels.columns.droplevel(1)
-filling_levels.to_excel(writer, 'filling_levels')
+save(filling_levels, 'filling_levels')
 
-
-writer.save()
+#writer.save()
 
 time['postprocessing'] = cli.stopwatch()
 
@@ -183,5 +190,6 @@ if True:
     excess_share = (excess.sum() * config['temporal_resolution'] / 1e6) / supply_sum.sum(axis=1)
     excess_share.name = 'excess'
 
-    pd.concat([supply_sum, excess_share], axis=1).to_csv(
-        os.path.join(results_path, 'summary.csv'))
+    summary = pd.concat([supply_sum, excess_share], axis=1)
+
+    save(summary, 'summary')

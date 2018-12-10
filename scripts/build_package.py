@@ -50,7 +50,7 @@ if config['heating']:
     import heat_load
 
 # add meta data from data using datapackage utils
-building.infer_metadata(package_name='angus_base_scenario',
+building.infer_metadata(package_name='oemof-eu',
                         foreign_keys={
                             'bus': ['volatile', 'dispatchable', 'storage',
                                     'heat_storage', 'load', 'ror', 'reservoir',

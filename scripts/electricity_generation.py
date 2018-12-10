@@ -25,7 +25,12 @@ potential = Package('https://raw.githubusercontent.com/ZNES-datapackages/technol
 potential = pd.DataFrame(potential).set_index(['country', 'tech'])
 potential = potential.loc[potential['source'] == config['potential']].to_dict()
 
-
+for tech in technologies:
+    technologies[tech]['capacity_cost'] = (
+        technologies[tech]['capacity_cost'] * config['cost_factor'].get(tech, 1))
+    if 'storage_capacity_cost' in technologies[tech]:
+        technologies[tech]['storage_capacity_cost'] = (
+            technologies[tech]['storage_capacity_cost'] * config['cost_factor'].get(tech, 1))
 
 carrier = pd.read_csv('archive/carrier.csv', index_col=[0,1]).loc[('base', config['year'])]
 carrier.set_index('carrier', inplace=True)
@@ -112,6 +117,7 @@ for r in config['regions']:
                     'type': 'storage',
                     'efficiency': float(data['efficiency'])**0.5, # convert roundtrip to input / output efficiency
                     'marginal_cost': 0.0000001,
+                    'loss': 0.01,
 ''                  'capacity_potential': capacity_potential,
                     'capacity_ratio': data['capacity_ratio']
                 })

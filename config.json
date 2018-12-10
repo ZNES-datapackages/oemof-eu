@@ -8,14 +8,19 @@
     "resources": "resources",
     "scripts": "scripts"
   },
-  "name": "50Mt_emission",
+  "name": "0Mt_biomass_pv2_lopf",
   "wacc": 0.07,
-  "emission_limit": 50e6,
+  "cost_factor": {
+      "pv": 2,
+      "lithium_battery": 2,
+      "acaes": 1
+  },
+  "emission_limit": 0,
   "grid": {
     "capacity": 2050,
-    "method": "transshipment"
+    "method": "lopf"
   },
-  "temporal_resolution": 1,
+  "temporal_resolution": 3,
   "heating": false,
   "primary_carrier": [
       "biomass"],
@@ -43,9 +48,6 @@
   ],
   "central_heat_buses":[
     "DE-central-heat"
-  ],
-  "global_buses": [
-    "GL-gas"
   ],
   "investment_technologies": [
       "wind_onshore",
