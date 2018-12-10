@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 """
 import logging
@@ -10,8 +11,6 @@ from datapackage import Package, Resource
 import pandas as pd
 
 from datapackage_utilities import building
-
-
 
 # first we build the elements ---------------
 
@@ -75,6 +74,10 @@ countries = config['regions']
 columns = [c + suffix for c in countries]
 
 timeseries = raw_data[year][columns]
+
+if timeseries.isnull().values.any():
+    raise ValueError("Timeseries for load has NaN values. Select " +
+                     "another demand year or use another data source.")
 
 load_total = timeseries.sum()
 
