@@ -133,7 +133,7 @@ d = dict()
 for node in es.nodes:
     if not isinstance(node, (Bus, Sink)):
         if getattr(node, 'capacity', None) is not None:
-            if isinstance(node, (options.typemap['line'], options.typemap['link'])):
+            if isinstance(node, options.typemap['link']):
                 pass #key = (node.input, node.output, 'capacity', node.tech) # for oemof logic
             else:
                 key = (node, [n for n in node.outputs.keys()][0], 'capacity', node.tech) # for oemof logic
