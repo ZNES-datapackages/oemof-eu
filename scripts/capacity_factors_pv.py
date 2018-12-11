@@ -17,6 +17,9 @@ year = str(config['weather_year'])
 countries = config['regions']
 
 raw_data = pd.read_csv(filepath, index_col=[0], parse_dates=True)
+# for leap year...
+raw_data = raw_data[~((raw_data.index.month == 2)  &
+                      (raw_data.index.day == 29))]
 
 df = raw_data.loc[year]
 

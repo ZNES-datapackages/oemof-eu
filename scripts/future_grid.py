@@ -148,52 +148,52 @@ config = building.get_config()
 
 scenario = '100% RES'
 
-if config['grid']['method'] == 'lopf':
-    elements = {}
-    for idx, row in df_2050.iterrows():
-        if row['from'] in config['regions'] and \
-            row['to'] in config['regions']:
-            predecessor = row['from'] + '-electricity'
-            successor = row['to'] + '-electricity'
-            element_name = predecessor + '-' + successor
+# if config['grid']['method'] == 'lopf':
+#     elements = {}
+#     for idx, row in df_2050.iterrows():
+#         if row['from'] in config['regions'] and \
+#             row['to'] in config['regions']:
+#             predecessor = row['from'] + '-electricity'
+#             successor = row['to'] + '-electricity'
+#             element_name = predecessor + '-' + successor
+#
+#             element = {
+#                 'type': 'line',
+#                 'reactance': (0.246 * row['Length']) / 1000,
+#                 'from_bus': predecessor,
+#                 'to_bus': successor,
+#                 'tech': 'HV-line',
+#                 'capacity': row[scenario] + df_2030.loc[idx][scenario],
+#                 'capacity_cost': annuity(row['Length'] * 400, 50, 0.07), # €/MWkma
+#                 'length': row['Length'] * 1.2}
+#
+#             elements[element_name] = element
+#
+#     path = building.write_elements(
+#         'line.csv', pd.DataFrame.from_dict(elements, orient='index'))
+# else:
 
-            element = {
-                'type': 'line',
-                'reactance': (0.246 * row['Length']) / 1000,
-                'from_bus': predecessor,
-                'to_bus': successor,
-                'tech': 'HV-line',
-                'capacity': row[scenario] + df_2030.loc[idx][scenario],
-                'capacity_cost': annuity(row['Length'] * 400, 50, 0.07), # €/MWkma
-                'length': row['Length'] * 1.2}
+elements = {}
+for idx, row in df_2030.iterrows():
+    if row['from'] in config['regions'] and \
+        row['to'] in config['regions']:
+        predecessor = row['from'] + '-electricity'
+        successor = row['to'] + '-electricity'
+        element_name = predecessor + '-' + successor
 
-            elements[element_name] = element
+        element = {
+            'type': 'link',
+            'loss': 0.05,
+            'from_bus': predecessor,
+            'to_bus': successor,
+            'tech': 'transshipment',
+            'capacity': row[scenario] + df_2050.to_dict()[scenario].get(idx, 0),
+            'length': row['Length'] * 1.2}
 
-    path = building.write_elements(
-        'line.csv', pd.DataFrame.from_dict(elements, orient='index'))
-else:
+        elements[element_name] = element
 
-    elements = {}
-    for idx, row in df_2030.iterrows():
-        if row['from'] in config['regions'] and \
-            row['to'] in config['regions']:
-            predecessor = row['from'] + '-electricity'
-            successor = row['to'] + '-electricity'
-            element_name = predecessor + '-' + successor
-
-            element = {
-                'type': 'link',
-                'loss': 0.05,
-                'from_bus': predecessor,
-                'to_bus': successor,
-                'tech': 'transshipment',
-                'capacity': row[scenario] + df_2050.to_dict()[scenario].get(idx, 0),
-                'length': row['Length'] * 1.2}
-
-            elements[element_name] = element
-
-    path = building.write_elements(
-        'link.csv', pd.DataFrame.from_dict(elements, orient='index'))
+path = building.write_elements(
+    'link.csv', pd.DataFrame.from_dict(elements, orient='index'))
 
 
 #create_resource(path)

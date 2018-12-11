@@ -94,6 +94,12 @@ for c in countries:
 
     sequences_df[sequence_name] = load_profile[c + suffix].values
 
+if sequences_df.index.is_leap_year[0]:
+    sequences_df = sequences_df.loc[
+        ~((sequences_df.index.month == 2) &
+          (sequences_df.index.day == 29))]
+
+
 sequences_df.index = building.timeindex()
 
 path = building.write_sequences('load_profile.csv', sequences_df)

@@ -29,11 +29,27 @@ def get_hydro_inflow(inflow_dir=None):
 
     hydro = hyd.resample('H').interpolate('cubic')
 
+    # add last day of the dataset that is missing from resampling
+    last_day = pd.DataFrame(index=pd.DatetimeIndex(
+                                start='20121231', freq='H', periods=24),
+                            columns=hydro.columns)
+    data = hyd.loc['2012-12-31']
+    for c in last_day:
+        last_day.loc[:, c] = data[c]
+
+    # need to drop last day because it comes in last day...
+    hydro = pd.concat([hydro.drop(hydro.tail(1).index),
+                       last_day])
+
+    # remove last day in Feb for leap years
+    hydro = hydro[~((hydro.index.month == 2)  & (hydro.index.day == 29))]
+
     if True: #default norm
         normalization_factor = (hydro.index.size/float(hyd.index.size)) #normalize to new sampling frequency
-    else:
-        normalization_factor = hydro.sum() / hyd.sum() #conserve total inflow for each country separately
+    #else:
+    #    normalization_factor = hydro.sum() / hyd.sum() #conserve total inflow for each country separately
     hydro /= normalization_factor
+
     return hydro
 
 
@@ -112,6 +128,7 @@ rsv_sequences.columns = rsv_sequences.columns.map(rsv['profile'])
 # in meta data
 building.write_sequences(
     'reservoir_profile.csv', rsv_sequences.set_index(building.timeindex()))
+    
 building.write_sequences(
     'ror_profile.csv', ror_sequences.set_index(building.timeindex()))
 

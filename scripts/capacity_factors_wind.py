@@ -28,10 +28,16 @@ missing = ['LU' 'CZ' 'AT' 'CH']
 countries = list(set(config['regions']) - set(missing))
 
 near_term = pd.read_csv(near_term_path, index_col=[0], parse_dates=True)
+# for lead year...
+near_term = near_term[~((near_term.index.month == 2)  &
+                        (near_term.index.day == 29))]
 
 offshore_data = pd.read_csv(off_filepath, index_col=[0], parse_dates=True)
+offshore_data = offshore_data[~((offshore_data.index.month == 2)  &
+                                (offshore_data.index.day == 29))]
 
 sequences_df = pd.DataFrame(index=near_term.loc[year].index)
+
 
 for c in config['regions']:
     # add offshore profile if country exists in offshore data columns

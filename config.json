@@ -8,7 +8,7 @@
     "resources": "resources",
     "scripts": "scripts"
   },
-  "name": "0Mt_biomass_pv2_lopf",
+  "name": "0Mt_biomass_pv2",
   "wacc": 0.07,
   "cost_factor": {
       "pv": 2,
@@ -17,16 +17,15 @@
   },
   "emission_limit": 0,
   "grid": {
-    "capacity": 2050,
-    "method": "lopf"
+    "capacity": 2050
   },
   "temporal_resolution": 3,
   "heating": false,
   "primary_carrier": [
       "biomass"],
   "year": 2050,
-  "weather_year": 2011,
-  "demand_year": 2011,
+  "weather_year": 2012,
+  "demand_year": 2012,
   "potential": "LIMES-EU",
   "regions": [
     "LU",
