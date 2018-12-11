@@ -41,7 +41,7 @@ building.write_geometries('bus.geojson', buses)
 hub_elements = {}
 for b in buses.index:
     hub_elements[b] = {
-        'type': 'electricalbus',
+        'type': 'bus',
         'carrier': 'electricity',
         'geometry': b,
         'balanced': True}
