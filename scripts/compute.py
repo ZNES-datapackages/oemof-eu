@@ -15,7 +15,7 @@ from oemof.solph.components import GenericStorage
 from oemof.tools import logger, economics
 import oemof.outputlib as outlib
 
-from renpass import options, cli, components
+from renpass import options, cli
 from renpass import postprocessing as pp
 
 
